@@ -15,8 +15,12 @@ void MulPilot::rosReadParams()
   bool required = true;
   bool not_required = false;
 
-  readParam(pnh_, "desired_freq", desired_freq_, 40.0, not_required);
-  readParam(pnh_, "example_subscriber_name", example_subscriber_name_, "example", not_required);
+  readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
+  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "robot_status", required);
+  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "robot_result", required);
+  readParam(pnh_, "interface_pub", interface_pub_name_, "interface", required);
+  readParam(pnh_, "proxsensor_status_sub", proxsensor_status_sub_name_, "proxsensor_status", required);
+  readParam(pnh_, "iot_rtls_positions_sub", iot_rtls_positions_sub_name_, "iot_rtls_positions", required);
 }
 
 int MulPilot::rosSetup()
@@ -30,12 +34,19 @@ int MulPilot::rosSetup()
   status_pub_ = pnh_.advertise<std_msgs::String>("status", 10);
   status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
 
+  robot_status_pub_ = pnh_.advertise<robotnik_msgs::State>(robot_status_pub_name_, 10);
+  robot_result_pub_ = pnh_.advertise<robotnik_msgs::State>(robot_result_pub_name_, 10);
+  interface_pub_ = pnh_.advertise<robotnik_msgs::State>(interface_pub_name_, 10);
+
   // Subscriber
-  example_sub_ = nh_.subscribe<std_msgs::String>(example_subscriber_name_, 10, &MulPilot::exampleSubCb, this);
-  addTopicsHealth(&example_sub_, "example_sub", 50.0, not_required);
+  proxsensor_status_sub_ = nh_.subscribe<robotnik_msgs::State>(proxsensor_status_sub_name_, 10, &MulPilot::proxsensorStatusSubCb, this);
+  addTopicsHealth(&proxsensor_status_sub_, proxsensor_status_sub_name_, 50.0, required);
+
+  iot_rtls_positions_sub_ = nh_.subscribe<robotnik_msgs::State>(iot_rtls_positions_sub_name_, 10, &MulPilot::iotRtlsPositionsSubCb, this);
+  addTopicsHealth(&iot_rtls_positions_sub_, iot_rtls_positions_sub_name_, 50.0, required);
 
   // Service
-  example_server_ = pnh_.advertiseService("example", &MulPilot::exampleServerCb, this);
+  // example_server_ = pnh_.advertiseService("example", &MulPilot::exampleServerCb, this);
 
   return rcomponent::OK;
 }
@@ -101,27 +112,34 @@ void MulPilot::failureState()
   RComponent::failureState();
 }
 
-void MulPilot::exampleSubCb(const std_msgs::String::ConstPtr& msg)
+void MulPilot::proxsensorStatusSubCb(const robotnik_msgs::State::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg: " + msg->data);
+  RCOMPONENT_WARN_STREAM("Received msg: " + msg->state_description);
 
-  tickTopicsHealth("example_sub");
+  tickTopicsHealth("proxsensor_status");
 }
 
-bool MulPilot::exampleServerCb(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response)
+void MulPilot::iotRtlsPositionsSubCb(const robotnik_msgs::State::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received srv trigger petition.");
-  if (state != robotnik_msgs::State::READY_STATE)
-  {
-    response.success = false;
-    response.message = "Received srv trigger petition. Component not ready.";
-    return true;
-  }
-  else
-  {
-    response.success = true;
-    response.message = "Received srv trigger petition. Component ready.";
-    return true;
-  }
-  return false;
+  RCOMPONENT_WARN_STREAM("Received msg: " + msg->state_description);
+
+  tickTopicsHealth("iot_rtls_positions");
 }
+
+// bool MulPilot::exampleServerCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+// {
+//   RCOMPONENT_WARN_STREAM("Received srv trigger petition.");
+//   if (state != robotnik_msgs::State::READY_STATE)
+//   {
+//     response.success = false;
+//     response.message = "Received srv trigger petition. Component not ready.";
+//     return true;
+//   }
+//   else
+//   {
+//     response.success = true;
+//     response.message = "Received srv trigger petition. Component ready.";
+//     return true;
+//   }
+//   return false;
+// }

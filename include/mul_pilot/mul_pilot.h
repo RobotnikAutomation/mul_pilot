@@ -9,6 +9,7 @@
 // Insert here msg and srv includes:
 #include <std_msgs/String.h>
 #include <robotnik_msgs/StringStamped.h>
+#include <robotnik_msgs/State.h>
 
 #include <std_srvs/Trigger.h>
 
@@ -50,17 +51,32 @@ protected:
   ros::Publisher status_pub_;
   ros::Publisher status_stamped_pub_;
 
+  ros::Publisher robot_status_pub_;
+  string robot_status_pub_name_;
+
+  ros::Publisher robot_result_pub_;
+  string robot_result_pub_name_;
+
+  ros::Publisher interface_pub_;
+  string interface_pub_name_;
+
   //! Subscribers
-  ros::Subscriber example_sub_;
-  string example_subscriber_name_; // Name of the example_sub_ topic
+  ros::Subscriber proxsensor_status_sub_;
+  string proxsensor_status_sub_name_;
+
+  ros::Subscriber iot_rtls_positions_sub_;
+  string iot_rtls_positions_sub_name_;
 
   //! Services
-  ros::ServiceServer example_server_;
+  // ros::ServiceServer example_server_;
 
   //! Callbacks
-  void exampleSubCb(const std_msgs::String::ConstPtr& msg);
+  // Subscription Callbacks
+  void proxsensorStatusSubCb(const robotnik_msgs::State::ConstPtr &msg);
+  void iotRtlsPositionsSubCb(const robotnik_msgs::State::ConstPtr &msg);
 
-  bool exampleServerCb(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response);
+  // Service Callbacks
+  // bool exampleServerCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
 
   /* ROS stuff !*/
 
@@ -69,8 +85,6 @@ protected:
   std_msgs::String status_;
 
   /* MulPilot stuff !*/
-
-
 };
 
-#endif  // _MUL_PILOT_
+#endif // _MUL_PILOT_

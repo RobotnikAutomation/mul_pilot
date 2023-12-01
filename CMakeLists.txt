@@ -4,10 +4,11 @@ project(mul_pilot)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  odin_msgs
+  rcomponent
   roscpp
   std_msgs
   std_srvs
-  rcomponent
 )
 
 catkin_package(
@@ -16,10 +17,11 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}
   CATKIN_DEPENDS
+    odin_msgs
+    rcomponent 
     roscpp
     std_msgs
     std_srvs
-    rcomponent
   DEPENDS
 )
 

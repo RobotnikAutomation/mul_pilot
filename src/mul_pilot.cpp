@@ -34,15 +34,15 @@ int MulPilot::rosSetup()
   status_pub_ = pnh_.advertise<std_msgs::String>("status", 10);
   status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
 
-  robot_status_pub_ = pnh_.advertise<robotnik_msgs::State>(robot_status_pub_name_, 10);
-  robot_result_pub_ = pnh_.advertise<robotnik_msgs::State>(robot_result_pub_name_, 10);
-  interface_pub_ = pnh_.advertise<robotnik_msgs::State>(interface_pub_name_, 10);
+  robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
+  robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
+  interface_pub_ = pnh_.advertise<odin_msgs::RobotTask>(interface_pub_name_, 10);
 
   // Subscriber
-  proxsensor_status_sub_ = nh_.subscribe<robotnik_msgs::State>(proxsensor_status_sub_name_, 10, &MulPilot::proxsensorStatusSubCb, this);
+  proxsensor_status_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_status_sub_name_, 10, &MulPilot::proxsensorStatusSubCb, this);
   addTopicsHealth(&proxsensor_status_sub_, proxsensor_status_sub_name_, 50.0, required);
 
-  iot_rtls_positions_sub_ = nh_.subscribe<robotnik_msgs::State>(iot_rtls_positions_sub_name_, 10, &MulPilot::iotRtlsPositionsSubCb, this);
+  iot_rtls_positions_sub_ = nh_.subscribe<odin_msgs::RTLS>(iot_rtls_positions_sub_name_, 10, &MulPilot::iotRtlsPositionsSubCb, this);
   addTopicsHealth(&iot_rtls_positions_sub_, iot_rtls_positions_sub_name_, 50.0, required);
 
   // Service
@@ -112,16 +112,16 @@ void MulPilot::failureState()
   RComponent::failureState();
 }
 
-void MulPilot::proxsensorStatusSubCb(const robotnik_msgs::State::ConstPtr &msg)
+void MulPilot::proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg: " + msg->state_description);
+  RCOMPONENT_WARN_STREAM("Received msg: " + msg->version);
 
   tickTopicsHealth("proxsensor_status");
 }
 
-void MulPilot::iotRtlsPositionsSubCb(const robotnik_msgs::State::ConstPtr &msg)
+void MulPilot::iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg: " + msg->state_description);
+  RCOMPONENT_WARN_STREAM("Received msg: " + msg->version);
 
   tickTopicsHealth("iot_rtls_positions");
 }

@@ -9,7 +9,10 @@
 // Insert here msg and srv includes:
 #include <std_msgs/String.h>
 #include <robotnik_msgs/StringStamped.h>
-#include <robotnik_msgs/State.h>
+#include <odin_msgs/RTLS.h>
+#include <odin_msgs/ProxSensor.h>
+#include <odin_msgs/RobotStatus.h>
+#include <odin_msgs/RobotTask.h>
 
 #include <std_srvs/Trigger.h>
 
@@ -72,8 +75,8 @@ protected:
 
   //! Callbacks
   // Subscription Callbacks
-  void proxsensorStatusSubCb(const robotnik_msgs::State::ConstPtr &msg);
-  void iotRtlsPositionsSubCb(const robotnik_msgs::State::ConstPtr &msg);
+  void proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
+  void iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
 
   // Service Callbacks
   // bool exampleServerCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);

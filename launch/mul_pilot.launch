@@ -5,24 +5,35 @@
     <arg unless="$(arg debug)" name="launch_prefix" default=""/>
 	
 	<!-- Set namespace -->
-	<!--arg name="id_robot" default="robot"/-->
+	<arg name="id_robot" default="robot"/>
 
 	<!-- Desired frequency -->
-	<arg name="desired_freq" default="1.0" />
-	<!-- Name of the example topic -->
-	<arg name="example_subscriber_name" default="example" />
+	<arg name="desired_freq" default="10.0" />
+
+	<!-- mqtt-odin-platform-robot-status-kafka -->
+	<arg name="robot_status_pub" default="robot_status" />
+	<!-- mqtt-odin-platform-robot-result-kafka -->
+	<arg name="robot_result_pub" default="robot_result" />
+	<!-- mqtt-odin-platform-interface-kafka -->
+	<arg name="interface_pub" default="interface" />
+	<!-- mqtt-odin-platform-proxsensor-status-kafka -->
+	<arg name="proxsensor_status_sub" default="proxsensor_status" />
+	<!-- kafka-odin-platform-iot-rtls-positions-mqtt -->
+	<arg name="iot_rtls_positions_sub" default="iot_rtls_positions" />
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />
 
-	<!--group ns="$(arg id_robot)"-->
-
+	<group ns="$(arg id_robot)">
 		<!-- start MulPilot node -->
 		<node name="mul_pilot" pkg="mul_pilot" type="mul_pilot_node" output="screen" respawn="false" launch-prefix="$(arg launch_prefix)">
 			<param name="desired_freq" value="$(arg desired_freq)"/>
-			<param name="example_subscriber_name" value="$(arg example_subscriber_name)"/>
+			<param name="robot_status_pub" value="$(arg robot_status_pub)"/>
+			<param name="robot_result_pub" value="$(arg robot_result_pub)"/>
+			<param name="interface_pub" value="$(arg interface_pub)"/>
+			<param name="proxsensor_status_sub" value="$(arg proxsensor_status_sub)"/>
+			<param name="iot_rtls_positions_sub" value="$(arg iot_rtls_positions_sub)"/>
 		</node>
-
-	<!--/group-->
+	</group>
 
 </launch>

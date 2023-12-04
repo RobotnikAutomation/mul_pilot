@@ -21,6 +21,7 @@
 
 // Actions
 #include <move_base_msgs/MoveBaseAction.h>
+#include <robot_simple_command_manager_msgs/RobotSimpleCommandAction.h>
 
 class MulPilot : public rcomponent::RComponent
 {
@@ -93,6 +94,9 @@ protected:
   std::shared_ptr<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>> move_base_ac_;
   move_base_msgs::MoveBaseGoal move_base_goal_;
 
+  std::shared_ptr<actionlib::SimpleActionClient<robot_simple_command_manager_msgs::RobotSimpleCommandAction>> command_sequencer_ac_;
+  robot_simple_command_manager_msgs::RobotSimpleCommandGoal command_sequencer_goal_;
+
   //! Callbacks
   //! Subscription Callbacks
   void proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
@@ -108,6 +112,7 @@ protected:
 
   //! Action Callbacks
   void moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result);
+  void commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result);
   /* ROS Stuff !*/
 
   /*** MulPilot Stuff ***/
@@ -119,6 +124,7 @@ protected:
   std_msgs::String current_state_ros_;
 
   bool navigation_command_sent_;
+  bool pick_command_sent_;
 
   //! State Machine
   void runRobotStateMachine();

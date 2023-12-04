@@ -70,6 +70,7 @@ int MulPilot::rosSetup()
 
   //! Actions
   move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
+  command_sequencer_ac_ = std::make_shared<actionlib::SimpleActionClient<robot_simple_command_manager_msgs::RobotSimpleCommandAction>>(pnh_, "/robot/command_sequencer/action", true);
   /* ROS Stuff !*/
 
   return rcomponent::OK;
@@ -107,6 +108,7 @@ void MulPilot::initState()
   state_pub_.publish(current_state_ros_);
 
   navigation_command_sent_ = false;
+  pick_command_sent_ = false;
 
   switchToState(robotnik_msgs::State::STANDBY_STATE);
 }
@@ -188,6 +190,7 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
   state_pub_.publish(current_state_ros_);
 
   navigation_command_sent_ = false;
+  pick_command_sent_ = false;
 }
 /* State Machine !*/
 
@@ -232,6 +235,16 @@ void MulPilot::navigatingToRackState()
 void MulPilot::pickingRackState()
 {
   ROS_INFO("PICKING_RACK");
+  if (!pick_command_sent_)
+  {
+    ROS_INFO("Sending sequence to pick the rack...");
+
+    // TODO: Check functionality
+    command_sequencer_goal_.command.command = "PICK_RACK";
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&MulPilot::commandSequencerResultCb, this, _1, _2));
+
+    pick_command_sent_ = true;
+  }
 }
 
 //! NAVIGATING_TO_HOME
@@ -402,6 +415,34 @@ void MulPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, c
       else
       {
         ROS_ERROR("Failed to call service /mul_pilot/arrived_at_home");
+      }
+    }
+  }
+}
+
+void MulPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result)
+{
+  if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+  {
+    std_srvs::Trigger command_sequencer_srv_trigger;
+
+    //! PICKING_RACK
+    if (current_state_ == "PICKING_RACK")
+    {
+      if (rack_picked_client_.call(command_sequencer_srv_trigger))
+      {
+        if (command_sequencer_srv_trigger.response.success)
+        {
+          ROS_INFO("Successfully changed state to NAVIGATING_TO_HOME");
+        }
+        else
+        {
+          ROS_WARN("Failed to change state to NAVIGATING_TO_HOME: %s", command_sequencer_srv_trigger.response.message.c_str());
+        }
+      }
+      else
+      {
+        ROS_ERROR("Failed to call service /mul_pilot/rack_picked");
       }
     }
   }

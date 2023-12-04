@@ -20,6 +20,8 @@
 	<arg name="proxsensor_status_sub" default="proxsensor_status" />
 	<!-- kafka-odin-platform-iot-rtls-positions-mqtt -->
 	<arg name="iot_rtls_positions_sub" default="iot_rtls_positions" />
+	<!-- mqtt-odin-platform-smartbox-status-kafka -->
+	<arg name="smartbox_status_sub" default="smartbox_status" />
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />
@@ -33,6 +35,7 @@
 			<param name="interface_pub" value="$(arg interface_pub)"/>
 			<param name="proxsensor_status_sub" value="$(arg proxsensor_status_sub)"/>
 			<param name="iot_rtls_positions_sub" value="$(arg iot_rtls_positions_sub)"/>
+			<param name="smartbox_status_sub" value="$(arg smartbox_status_sub)"/>
 		</node>
 	</group>
 

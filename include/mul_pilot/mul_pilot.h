@@ -13,6 +13,7 @@
 #include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
+#include <odin_msgs/SmartboxStatus.h>
 
 #include <std_srvs/Trigger.h>
 
@@ -66,6 +67,9 @@ protected:
   ros::Subscriber iot_rtls_positions_sub_;
   string iot_rtls_positions_sub_name_;
 
+  ros::Subscriber smartbox_status_sub_;
+  string smartbox_status_sub_name_;
+
   //! Services Servers
   ros::ServiceServer out_of_battery_srv_;
   ros::ServiceServer location_received_srv_;
@@ -81,6 +85,7 @@ protected:
   //! Subscription Callbacks
   void proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
   void iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
+  void smartboxStatusSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
 
   //! Transition Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);

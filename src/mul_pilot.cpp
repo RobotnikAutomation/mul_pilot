@@ -21,6 +21,7 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "interface_pub", interface_pub_name_, "interface", required);
   readParam(pnh_, "proxsensor_status_sub", proxsensor_status_sub_name_, "proxsensor_status", required);
   readParam(pnh_, "iot_rtls_positions_sub", iot_rtls_positions_sub_name_, "iot_rtls_positions", required);
+  readParam(pnh_, "smartbox_status_sub", smartbox_status_sub_name_, "smartbox_status", required);
 }
 
 int MulPilot::rosSetup()
@@ -41,11 +42,17 @@ int MulPilot::rosSetup()
   interface_pub_ = pnh_.advertise<odin_msgs::RobotTask>(interface_pub_name_, 10);
 
   //! Subscribers
+  // Proximity Sensor
   proxsensor_status_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_status_sub_name_, 10, &MulPilot::proxsensorStatusSubCb, this);
   addTopicsHealth(&proxsensor_status_sub_, proxsensor_status_sub_name_, 50.0, required);
 
+  // RTLS
   iot_rtls_positions_sub_ = nh_.subscribe<odin_msgs::RTLS>(iot_rtls_positions_sub_name_, 10, &MulPilot::iotRtlsPositionsSubCb, this);
   addTopicsHealth(&iot_rtls_positions_sub_, iot_rtls_positions_sub_name_, 50.0, required);
+
+  // Smartbox
+  smartbox_status_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_status_sub_name_, 10, &MulPilot::smartboxStatusSubCb, this);
+  addTopicsHealth(&smartbox_status_sub_, smartbox_status_sub_name_, 50.0, required);
 
   //! Service Servers
   out_of_battery_srv_ = pnh_.advertiseService("out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
@@ -310,33 +317,19 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Callbacks */
 void MulPilot::proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg: " + msg->version);
-
+  RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + msg->version);
   tickTopicsHealth("proxsensor_status");
 }
 
 void MulPilot::iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg: " + msg->version);
-
+  RCOMPONENT_WARN_STREAM("Received msg (RTLS): " + msg->version);
   tickTopicsHealth("iot_rtls_positions");
 }
-/* Callbacks !*/
 
-// bool MulPilot::exampleServerCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-// {
-//   RCOMPONENT_WARN_STREAM("Received srv trigger petition.");
-//   if (state != robotnik_msgs::State::READY_STATE)
-//   {
-//     response.success = false;
-//     response.message = "Received srv trigger petition. Component not ready.";
-//     return true;
-//   }
-//   else
-//   {
-//     response.success = true;
-//     response.message = "Received srv trigger petition. Component ready.";
-//     return true;
-//   }
-//   return false;
-// }
+void MulPilot::smartboxStatusSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
+{
+  RCOMPONENT_WARN_STREAM("Received msg (Smartbox): " + msg->version);
+  tickTopicsHealth("smartbox_status");
+}
+/* Callbacks !*/

@@ -62,8 +62,14 @@ int MulPilot::rosSetup()
   arrived_at_home_srv_ = pnh_.advertiseService("arrived_at_home", &MulPilot::arrivedAtHomeServiceCb, this);
 
   //! Service Clients
+  out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/out_of_battery");
+  location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/location_received");
+  arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_rack");
+  rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/rack_picked");
+  arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_home");
 
   //! Actions
+  move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
   /* ROS Stuff !*/
 
   return rcomponent::OK;
@@ -202,6 +208,24 @@ void MulPilot::gettingLocationState()
 void MulPilot::navigatingToRackState()
 {
   ROS_INFO("NAVIGATING_TO_RACK");
+  if (!navigation_command_sent_)
+  {
+    ROS_INFO("Sending command to navigate to the rack...");
+
+    // TODO: Change this to the correct frame and coordinates
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.pose.position.x = 3.0;
+    move_base_goal_.target_pose.pose.position.y = -1.0;
+    move_base_goal_.target_pose.pose.position.z = 0.0;
+    move_base_goal_.target_pose.pose.orientation.x = 0.0;
+    move_base_goal_.target_pose.pose.orientation.y = 0.0;
+    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
+    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&MulPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
 }
 
 //! PICKING_RACK
@@ -315,6 +339,7 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Transitions !*/
 
 /* Callbacks */
+//! Subscription Callbacks
 void MulPilot::proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
   RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + msg->version);
@@ -331,5 +356,54 @@ void MulPilot::smartboxStatusSubCb(const odin_msgs::SmartboxStatus::ConstPtr &ms
 {
   RCOMPONENT_WARN_STREAM("Received msg (Smartbox): " + msg->version);
   tickTopicsHealth("smartbox_status");
+}
+
+//! Action Callbacks
+void MulPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result)
+{
+  if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+  {
+    std_srvs::Trigger move_base_srv_trigger;
+
+    //! NAVIGATING_TO_RACK
+    if (current_state_ == "NAVIGATING_TO_RACK")
+    {
+      if (arrived_at_rack_client_.call(move_base_srv_trigger))
+      {
+        if (move_base_srv_trigger.response.success)
+        {
+          ROS_INFO("Successfully changed state to PICKING_RACK");
+        }
+        else
+        {
+          ROS_WARN("Failed to change state to PICKING_RACK: %s", move_base_srv_trigger.response.message.c_str());
+        }
+      }
+      else
+      {
+        ROS_ERROR("Failed to call service /mul_pilot/arrived_at_rack");
+      }
+    }
+
+    //! NAVIGATING_TO_HOME
+    if (current_state_ == "NAVIGATING_TO_HOME")
+    {
+      if (arrived_at_home_client_.call(move_base_srv_trigger))
+      {
+        if (move_base_srv_trigger.response.success)
+        {
+          ROS_INFO("Successfully changed state to WAITING_FOR_MISSION");
+        }
+        else
+        {
+          ROS_WARN("Failed to change state to WAITING_FOR_MISSION: %s", move_base_srv_trigger.response.message.c_str());
+        }
+      }
+      else
+      {
+        ROS_ERROR("Failed to call service /mul_pilot/arrived_at_home");
+      }
+    }
+  }
 }
 /* Callbacks !*/

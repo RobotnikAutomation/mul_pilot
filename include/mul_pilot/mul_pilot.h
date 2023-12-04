@@ -4,18 +4,23 @@
 #include <rcomponent/rcomponent.h>
 
 // Insert here general includes:
+#include <actionlib/client/simple_action_client.h>
 #include <math.h>
 
-// Insert here msg and srv includes:
-#include <std_msgs/String.h>
-#include <robotnik_msgs/StringStamped.h>
-#include <odin_msgs/RTLS.h>
+// Msgs
 #include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
+#include <odin_msgs/RTLS.h>
 #include <odin_msgs/SmartboxStatus.h>
+#include <robotnik_msgs/StringStamped.h>
+#include <std_msgs/String.h>
 
+// Srvs
 #include <std_srvs/Trigger.h>
+
+// Actions
+#include <move_base_msgs/MoveBaseAction.h>
 
 class MulPilot : public rcomponent::RComponent
 {
@@ -78,8 +83,15 @@ protected:
   ros::ServiceServer arrived_at_home_srv_;
 
   //! Services Clients
+  ros::ServiceClient out_of_battery_client_;
+  ros::ServiceClient location_received_client_;
+  ros::ServiceClient arrived_at_rack_client_;
+  ros::ServiceClient rack_picked_client_;
+  ros::ServiceClient arrived_at_home_client_;
 
   //! Actions
+  std::shared_ptr<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>> move_base_ac_;
+  move_base_msgs::MoveBaseGoal move_base_goal_;
 
   //! Callbacks
   //! Subscription Callbacks
@@ -93,6 +105,9 @@ protected:
   bool arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+
+  //! Action Callbacks
+  void moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result);
   /* ROS Stuff !*/
 
   /*** MulPilot Stuff ***/
@@ -103,7 +118,7 @@ protected:
 
   std_msgs::String current_state_ros_;
 
-  string navigation_command_sent_;
+  bool navigation_command_sent_;
 
   //! State Machine
   void runRobotStateMachine();

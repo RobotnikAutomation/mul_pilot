@@ -239,7 +239,7 @@ void MulPilot::pickingRackState()
   {
     ROS_INFO("Sending sequence to pick the rack...");
 
-    // TODO: Check functionality
+    // TODO: Set correct command
     command_sequencer_goal_.command.command = "PICK_RACK";
     command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&MulPilot::commandSequencerResultCb, this, _1, _2));
 

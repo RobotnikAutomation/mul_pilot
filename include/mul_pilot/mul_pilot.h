@@ -23,11 +23,10 @@ public:
   ~MulPilot() override;
 
 protected:
-  /*** RComponent stuff ***/
-
-  //! Setups all the ROS' stuff
+  /*** RComponent Stuff ***/
+  //! Setups all the ROS' Stuff
   int rosSetup() override;
-  //! Shutdowns all the ROS' stuff
+  //! Shutdowns all the ROS' Stuff
   int rosShutdown() override;
   //! Reads data a publish several info into different topics
   void rosPublish() override;
@@ -43,16 +42,13 @@ protected:
   void emergencyState() override;
   //! Actions performed on Failure state
   void failureState() override;
+  /* RComponent Stuff !*/
 
-  /* RComponent stuff !*/
-
-  /* ROS Stuff */
-
-  // Publishers
-
-  //! To publish the basic information
+  /*** ROS Stuff ***/
+  //! Publishers
   ros::Publisher status_pub_;
   ros::Publisher status_stamped_pub_;
+  ros::Publisher state_pub_;
 
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;
@@ -70,24 +66,59 @@ protected:
   ros::Subscriber iot_rtls_positions_sub_;
   string iot_rtls_positions_sub_name_;
 
-  //! Services
-  // ros::ServiceServer example_server_;
+  //! Services Servers
+  ros::ServiceServer out_of_battery_srv_;
+  ros::ServiceServer location_received_srv_;
+  ros::ServiceServer arrived_at_rack_srv_;
+  ros::ServiceServer rack_picked_srv_;
+  ros::ServiceServer arrived_at_home_srv_;
+
+  //! Services Clients
+
+  //! Actions
 
   //! Callbacks
-  // Subscription Callbacks
+  //! Subscription Callbacks
   void proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
   void iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
 
-  // Service Callbacks
-  // bool exampleServerCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  //! Transition Callbacks
+  bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool locationReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  /* ROS Stuff !*/
 
-  /* ROS stuff !*/
-
-  /* MulPilot stuff */
-
+  /*** MulPilot Stuff ***/
   std_msgs::String status_;
 
-  /* MulPilot stuff !*/
+  string current_state_;
+  string previous_state_;
+
+  std_msgs::String current_state_ros_;
+
+  string navigation_command_sent_;
+
+  //! State Machine
+  void runRobotStateMachine();
+  void changeState(const string &next_state, const string &additional_information);
+
+  //! WAITING_FOR_MISSION
+  void waitingForMissionState();
+
+  //! GETTING_LOCATION
+  void gettingLocationState();
+
+  //! NAVIGATING_TO_RACK
+  void navigatingToRackState();
+
+  //! PICKING_RACK
+  void pickingRackState();
+
+  //! NAVIGATING_TO_HOME
+  void navigatingToHomeState();
+  /* MulPilot Stuff !*/
 };
 
 #endif // _MUL_PILOT_

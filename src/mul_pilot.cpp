@@ -16,12 +16,12 @@ void MulPilot::rosReadParams()
   bool not_required = false;
 
   readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
-  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/mul_pillot/robot_status", required);
-  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/mul_pillot/robot_result", required);
-  readParam(pnh_, "interface_pub", interface_pub_name_, "/mul_pillot/interface", required);
-  readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/mul_pillot/proxsensor", required);
-  readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pillot/rtls", required);
-  readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pillot/smartbox", required);
+  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/mul_pilot/robot_status", required);
+  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/mul_pilot/robot_result", required);
+  readParam(pnh_, "interface_pub", interface_pub_name_, "/mul_pilot/interface", required);
+  readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/mul_pilot/proxsensor", required);
+  readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pilot/rtls", required);
+  readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
   readParam(pnh_, "pick_sequence", pick_sequence_, "PICK_RACK", required);
 }
 
@@ -46,34 +46,34 @@ int MulPilot::rosSetup()
   //! Subscribers
   // Proximity Sensor
   proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
-  addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, required);
+  addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, not_required);
 
   // RTLS
   rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
-  addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, required);
+  addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
 
   // Smartbox
   smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
-  addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, required);
+  addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
 
   //! Service Servers
-  out_of_battery_srv_ = pnh_.advertiseService("out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
-  location_received_srv_ = pnh_.advertiseService("location_received", &MulPilot::locationReceivedServiceCb, this);
-  arrived_at_rack_srv_ = pnh_.advertiseService("arrived_at_rack", &MulPilot::arrivedAtRackServiceCb, this);
-  rack_picked_srv_ = pnh_.advertiseService("rack_picked", &MulPilot::rackPickedServiceCb, this);
-  arrived_at_home_srv_ = pnh_.advertiseService("arrived_at_home", &MulPilot::arrivedAtHomeServiceCb, this);
+  out_of_battery_srv_ = pnh_.advertiseService("/mul_pilot/out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
+  location_received_srv_ = pnh_.advertiseService("/mul_pilot/location_received", &MulPilot::locationReceivedServiceCb, this);
+  arrived_at_rack_srv_ = pnh_.advertiseService("/mul_pilot/arrived_at_rack", &MulPilot::arrivedAtRackServiceCb, this);
+  rack_picked_srv_ = pnh_.advertiseService("/mul_pilot/rack_picked", &MulPilot::rackPickedServiceCb, this);
+  arrived_at_home_srv_ = pnh_.advertiseService("/mul_pilot/arrived_at_home", &MulPilot::arrivedAtHomeServiceCb, this);
 
   //! Service Clients
-  out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("out_of_battery");
-  location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("location_received");
-  arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("arrived_at_rack");
-  rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("rack_picked");
-  arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("arrived_at_home");
+  out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/out_of_battery");
+  location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/location_received");
+  arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_rack");
+  rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/rack_picked");
+  arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_home");
 
   //! Action Clients
   move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
   command_sequencer_ac_ = std::make_shared<actionlib::SimpleActionClient<robot_simple_command_manager_msgs::RobotSimpleCommandAction>>(pnh_, "/robot/command_sequencer/action", true);
-  
+
   /* ROS Stuff !*/
 
   return rcomponent::OK;
@@ -268,6 +268,7 @@ bool MulPilot::outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_sr
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
+    RCOMPONENT_WARN_STREAM("HA ENTRADO");
     changeState("GETTING_LOCATION", "Smartbox is out of battery!");
     response.success = true;
     response.message = "Smartbox is out of battery! Changing state to GETTING_LOCATION.";
@@ -365,7 +366,31 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 //! Subscription Callbacks
 void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + msg->version);
+  std::string status = msg->data.Status;
+  RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + status);
+
+  // WAITING_FOR_MISSION --> GETTING_LOCATION
+  if (status == "out_of_battery" && current_state_ == "WAITING_FOR_MISSION")
+  {
+    std_srvs::TriggerRequest out_of_battery_srv_request;
+    std_srvs::TriggerResponse out_of_battery_srv_response;
+
+    if (outOfBatteryServiceCb(out_of_battery_srv_request, out_of_battery_srv_response))
+    {
+      if (out_of_battery_srv_response.success)
+      {
+        RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+      }
+      else
+      {
+        RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+      }
+    }
+    else
+    {
+      RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/out_of_battery");
+    }
+  }
   tickTopicsHealth(proxsensor_sub_name_);
 }
 
@@ -386,45 +411,46 @@ void MulPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, c
 {
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
-    std_srvs::Trigger move_base_srv_trigger;
+    std_srvs::TriggerRequest move_base_srv_request;
+    std_srvs::TriggerResponse move_base_srv_response;
 
     //! NAVIGATING_TO_RACK
     if (current_state_ == "NAVIGATING_TO_RACK")
     {
-      if (arrived_at_rack_client_.call(move_base_srv_trigger))
+      if (arrivedAtRackServiceCb(move_base_srv_request, move_base_srv_response))
       {
-        if (move_base_srv_trigger.response.success)
+        if (move_base_srv_response.success)
         {
-          ROS_INFO("Successfully changed state to PICKING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully changed state to PICKING_RACK");
         }
         else
         {
-          ROS_WARN("Failed to change state to PICKING_RACK: %s", move_base_srv_trigger.response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to change state to PICKING_RACK: " << move_base_srv_response.message.c_str());
         }
       }
       else
       {
-        ROS_ERROR("Failed to call service /mul_pilot/arrived_at_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/arrived_at_rack");
       }
     }
 
     //! NAVIGATING_TO_HOME
     if (current_state_ == "NAVIGATING_TO_HOME")
     {
-      if (arrived_at_home_client_.call(move_base_srv_trigger))
+      if (arrivedAtHomeServiceCb(move_base_srv_request, move_base_srv_response))
       {
-        if (move_base_srv_trigger.response.success)
+        if (move_base_srv_response.success)
         {
-          ROS_INFO("Successfully changed state to WAITING_FOR_MISSION");
+          RCOMPONENT_INFO_STREAM("Successfully changed state to WAITING_FOR_MISSION");
         }
         else
         {
-          ROS_WARN("Failed to change state to WAITING_FOR_MISSION: %s", move_base_srv_trigger.response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to change state to WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
         }
       }
       else
       {
-        ROS_ERROR("Failed to call service /mul_pilot/arrived_at_home");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/arrived_at_home");
       }
     }
   }
@@ -434,25 +460,26 @@ void MulPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &
 {
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
-    std_srvs::Trigger command_sequencer_srv_trigger;
+    std_srvs::TriggerRequest command_sequencer_srv_request;
+    std_srvs::TriggerResponse command_sequencer_srv_response;
 
     //! PICKING_RACK
     if (current_state_ == "PICKING_RACK")
     {
-      if (rack_picked_client_.call(command_sequencer_srv_trigger))
+      if (rackPickedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
       {
-        if (command_sequencer_srv_trigger.response.success)
+        if (command_sequencer_srv_response.success)
         {
-          ROS_INFO("Successfully changed state to NAVIGATING_TO_HOME");
+          RCOMPONENT_INFO_STREAM("Successfully changed state to NAVIGATING_TO_HOME");
         }
         else
         {
-          ROS_WARN("Failed to change state to NAVIGATING_TO_HOME: %s", command_sequencer_srv_trigger.response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to change state to NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else
       {
-        ROS_ERROR("Failed to call service /mul_pilot/rack_picked");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/rack_picked");
       }
     }
   }

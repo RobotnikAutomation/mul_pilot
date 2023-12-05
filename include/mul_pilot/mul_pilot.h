@@ -128,6 +128,7 @@ protected:
   bool navigation_command_sent_;
   bool pick_command_sent_;
   string pick_sequence_;
+  bool mission_received_;
 
   //! State Machine
   void runRobotStateMachine();

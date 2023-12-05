@@ -33,8 +33,8 @@ This node implements the RB-1's state machine. The default state when starting t
 
 ### 1.3 Published Topics
 
-* foo/topic_name (std_msgs/String)\
-  topic description, including any important rate information
+* ~~foo/topic_name (std_msgs/String)\
+  topic description, including any important rate information~~
 
 ### 1.4 Services
 

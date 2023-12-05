@@ -261,7 +261,6 @@ bool MulPilot::outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_sr
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    RCOMPONENT_WARN_STREAM("HA ENTRADO");
     changeState("GETTING_LOCATION", "Smartbox is out of battery!");
     response.success = true;
     response.message = "Smartbox is out of battery! Changing state to GETTING_LOCATION.";
@@ -281,7 +280,7 @@ bool MulPilot::locationReceivedServiceCb(std_srvs::Trigger::Request &request, st
 {
   if (current_state_ == "GETTING_LOCATION")
   {
-    changeState("NAVIGATING_TO_RACK", "Location received from RTLS!");
+    changeState("NAVIGATING_TO_RACK", "Location received from RTLS: x=" + std::to_string(x_) + ", y=" + std::to_string(y_) + ", z=" + std::to_string(z_));
     response.success = true;
     response.message = "Location received! Changing state to NAVIGATING_TO_RACK.";
     return true;
@@ -359,29 +358,32 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 //! Subscription Callbacks
 void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
-  std::string status = msg->data.Status;
-  RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + status);
-
   // WAITING_FOR_MISSION --> GETTING_LOCATION
-  if (status == "out_of_battery" && current_state_ == "WAITING_FOR_MISSION")
+  if (current_state_ == "WAITING_FOR_MISSION")
   {
-    std_srvs::TriggerRequest out_of_battery_srv_request;
-    std_srvs::TriggerResponse out_of_battery_srv_response;
+    std::string status = msg->data.Status;
+    RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + status);
 
-    if (outOfBatteryServiceCb(out_of_battery_srv_request, out_of_battery_srv_response))
+    if (status == "out_of_battery")
     {
-      if (out_of_battery_srv_response.success)
+      std_srvs::TriggerRequest out_of_battery_srv_request;
+      std_srvs::TriggerResponse out_of_battery_srv_response;
+
+      if (outOfBatteryServiceCb(out_of_battery_srv_request, out_of_battery_srv_response))
       {
-        RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+        if (out_of_battery_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+        }
       }
       else
       {
-        RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/out_of_battery");
       }
-    }
-    else
-    {
-      RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/out_of_battery");
     }
   }
   tickTopicsHealth(proxsensor_sub_name_);
@@ -389,7 +391,31 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 
 void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
-  RCOMPONENT_WARN_STREAM("Received msg (RTLS): " + msg->version);
+  if (current_state_ == "GETTING_LOCATION")
+  {
+    x_ = msg->data.x;
+    y_ = msg->data.y;
+    z_ = msg->data.z;
+
+    std_srvs::TriggerRequest location_received_srv_request;
+    std_srvs::TriggerResponse location_received_srv_response;
+
+    if (locationReceivedServiceCb(location_received_srv_request, location_received_srv_response))
+    {
+      if (location_received_srv_response.success)
+      {
+        RCOMPONENT_INFO_STREAM("Successfully changed state to NAVIGATING_TO_RACK");
+      }
+      else
+      {
+        RCOMPONENT_WARN_STREAM("Failed to change state to NAVIGATING_TO_RACK: " << location_received_srv_response.message.c_str());
+      }
+    }
+    else
+    {
+      RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/location_received");
+    }
+  }
   tickTopicsHealth(rtls_sub_name_);
 }
 

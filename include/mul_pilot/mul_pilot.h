@@ -105,7 +105,7 @@ protected:
   void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
   void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
 
-  //! Transition Callbacks
+  //! Service Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool locationReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
@@ -123,11 +123,6 @@ protected:
   std_msgs::String status_;
   string current_state_;
   string previous_state_;
-  std_msgs::String current_state_ros_;
-  bool navigation_command_sent_;
-  bool pick_command_sent_;
-  string pick_sequence_;
-  bool mission_received_;
 
   //! State Machine
   void runRobotStateMachine();
@@ -135,15 +130,22 @@ protected:
 
   //! WAITING_FOR_MISSION
   void waitingForMissionState();
+  bool mission_received_;
 
   //! GETTING_LOCATION
   void gettingLocationState();
+  float x_;
+  float y_;
+  float z_;
 
   //! NAVIGATING_TO_RACK
   void navigatingToRackState();
+  bool navigation_command_sent_;
 
   //! PICKING_RACK
   void pickingRackState();
+  string pick_sequence_;
+  bool pick_command_sent_;
 
   //! NAVIGATING_TO_HOME
   void navigatingToHomeState();

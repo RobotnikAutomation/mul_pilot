@@ -356,9 +356,9 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Callbacks */
 
 //! Subscription Callbacks
+// WAITING_FOR_MISSION --> GETTING_LOCATION
 void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
-  // WAITING_FOR_MISSION --> GETTING_LOCATION
   if (current_state_ == "WAITING_FOR_MISSION")
   {
     std::string status = msg->data.Status;
@@ -389,6 +389,39 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
   tickTopicsHealth(proxsensor_sub_name_);
 }
 
+// WAITING_FOR_MISSION --> GETTING_LOCATION
+void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
+{
+  if (current_state_ == "WAITING_FOR_MISSION")
+  {
+    float battery = msg->data.battery;
+
+    if (battery < 10.0)
+    {
+      std_srvs::TriggerRequest out_of_battery_srv_request;
+      std_srvs::TriggerResponse out_of_battery_srv_response;
+
+      if (outOfBatteryServiceCb(out_of_battery_srv_request, out_of_battery_srv_response))
+      {
+        if (out_of_battery_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/out_of_battery");
+      }
+    }
+  }
+  tickTopicsHealth(smartbox_sub_name_);
+}
+
+// GETTING_LOCATION --> NAVIGATING_TO_RACK
 void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
   if (current_state_ == "GETTING_LOCATION")
@@ -417,12 +450,6 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
     }
   }
   tickTopicsHealth(rtls_sub_name_);
-}
-
-void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
-{
-  RCOMPONENT_WARN_STREAM("Received msg (Smartbox): " + msg->version);
-  tickTopicsHealth(smartbox_sub_name_);
 }
 
 //! Action Callbacks

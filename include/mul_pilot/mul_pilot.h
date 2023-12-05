@@ -31,7 +31,7 @@ public:
 
 protected:
   /*** RComponent Stuff ***/
-  
+
   //! Setups all the ROS' Stuff
   int rosSetup() override;
   //! Shutdowns all the ROS' Stuff
@@ -50,7 +50,7 @@ protected:
   void emergencyState() override;
   //! Actions performed on Failure state
   void failureState() override;
-  
+
   /* RComponent Stuff !*/
 
   /*** ROS Stuff ***/
@@ -102,8 +102,8 @@ protected:
   //! Callbacks
   //! Subscription Callbacks
   void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
-  void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
   void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
+  void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
 
   //! Service Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
@@ -115,7 +115,7 @@ protected:
   //! Action Callbacks
   void moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result);
   void commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result);
-  
+
   /* ROS Stuff !*/
 
   /*** MulPilot Stuff ***/

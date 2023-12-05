@@ -81,6 +81,7 @@ protected:
   //! Services Servers
   ros::ServiceServer out_of_battery_srv_;
   ros::ServiceServer location_received_srv_;
+  ros::ServiceServer goal_calculated_srv_;
   ros::ServiceServer arrived_at_rack_srv_;
   ros::ServiceServer rack_picked_srv_;
   ros::ServiceServer arrived_at_home_srv_;
@@ -88,6 +89,7 @@ protected:
   //! Services Clients
   ros::ServiceClient out_of_battery_client_;
   ros::ServiceClient location_received_client_;
+  ros::ServiceClient goal_calculated_client_;
   ros::ServiceClient arrived_at_rack_client_;
   ros::ServiceClient rack_picked_client_;
   ros::ServiceClient arrived_at_home_client_;
@@ -108,6 +110,7 @@ protected:
   //! Service Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool locationReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   bool arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
@@ -134,9 +137,21 @@ protected:
 
   //! GETTING_LOCATION
   void gettingLocationState();
-  float x_;
-  float y_;
-  float z_;
+  double x_{0.0};
+  double y_{0.0};
+  double z_{0.0};
+  double x1_{0.0};
+  double y1_{0.0};
+  double z1_{0.0};
+  double x2_{0.0};
+  double y2_{0.0};
+  double z2_{0.0};
+  double x_goal_{0.0};
+  double y_goal_{0.0};
+  double z_goal_{0.0};
+
+  //! CALCULATING_GOAL
+  void calculatingGoalState();
 
   //! NAVIGATING_TO_RACK
   void navigatingToRackState();

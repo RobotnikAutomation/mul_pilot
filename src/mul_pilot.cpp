@@ -58,6 +58,7 @@ int MulPilot::rosSetup()
   //! Service Servers
   out_of_battery_srv_ = pnh_.advertiseService("/mul_pilot/out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
   location_received_srv_ = pnh_.advertiseService("/mul_pilot/location_received", &MulPilot::locationReceivedServiceCb, this);
+  goal_calculated_srv_ = pnh_.advertiseService("/mul_pilot/goal_calculated", &MulPilot::goalCalculatedServiceCb, this);
   arrived_at_rack_srv_ = pnh_.advertiseService("/mul_pilot/arrived_at_rack", &MulPilot::arrivedAtRackServiceCb, this);
   rack_picked_srv_ = pnh_.advertiseService("/mul_pilot/rack_picked", &MulPilot::rackPickedServiceCb, this);
   arrived_at_home_srv_ = pnh_.advertiseService("/mul_pilot/arrived_at_home", &MulPilot::arrivedAtHomeServiceCb, this);
@@ -65,6 +66,7 @@ int MulPilot::rosSetup()
   //! Service Clients
   out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/out_of_battery");
   location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/location_received");
+  goal_calculated_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/goal_calculated");
   arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_rack");
   rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/rack_picked");
   arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_home");
@@ -159,6 +161,10 @@ void MulPilot::runRobotStateMachine()
   {
     gettingLocationState();
   }
+  else if (current_state_ == "CALCULATING_GOAL")
+  {
+    calculatingGoalState();
+  }
   else if (current_state_ == "NAVIGATING_TO_RACK")
   {
     navigatingToRackState();
@@ -206,6 +212,32 @@ void MulPilot::gettingLocationState()
   ROS_INFO("GETTING_LOCATION");
 }
 
+//! CALCULATING_GOAL
+void MulPilot::calculatingGoalState()
+{
+  ROS_INFO("CALCULATING_GOAL");
+
+  // TODO: Get correct coordinates from docking station location
+  double distance1;
+  distance1 = sqrt(pow(x_ - x1_, 2) + pow(y_ - y1_, 2) + pow(z_ - z1_, 2));
+
+  double distance2;
+  distance2 = sqrt(pow(x_ - x2_, 2) + pow(y_ - y2_, 2) + pow(z_ - z2_, 2));
+
+  if (distance1 < distance2)
+  {
+    x_goal_ = x1_;
+    y_goal_ = y1_;
+    z_goal_ = z1_;
+  }
+  else
+  {
+    x_goal_ = x2_;
+    y_goal_ = y2_;
+    z_goal_ = z2_;
+  }
+}
+
 //! NAVIGATING_TO_RACK
 void MulPilot::navigatingToRackState()
 {
@@ -217,9 +249,9 @@ void MulPilot::navigatingToRackState()
     // TODO: Change this to the correct frame and coordinates
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = 3.0;
-    move_base_goal_.target_pose.pose.position.y = -1.0;
-    move_base_goal_.target_pose.pose.position.z = 0.0;
+    move_base_goal_.target_pose.pose.position.x = x_goal_;
+    move_base_goal_.target_pose.pose.position.y = y_goal_;
+    move_base_goal_.target_pose.pose.position.z = z_goal_;
     move_base_goal_.target_pose.pose.orientation.x = 0.0;
     move_base_goal_.target_pose.pose.orientation.y = 0.0;
     move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
@@ -275,20 +307,39 @@ bool MulPilot::outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_sr
   return false;
 }
 
-//! GETTING_LOCATION --> NAVIGATING_TO_RACK
+//! GETTING_LOCATION --> CALCULATING_GOAL
 bool MulPilot::locationReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "GETTING_LOCATION")
   {
-    changeState("NAVIGATING_TO_RACK", "Location received from RTLS: x=" + std::to_string(x_) + ", y=" + std::to_string(y_) + ", z=" + std::to_string(z_));
+    changeState("CALCULATING_GOAL", "Location received from RTLS: x=" + std::to_string(x_) + ", y=" + std::to_string(y_) + ", z=" + std::to_string(z_));
     response.success = true;
-    response.message = "Location received! Changing state to NAVIGATING_TO_RACK.";
+    response.message = "Location received! Changing state to CALCULATING_GOAL.";
     return true;
   }
   else
   {
     response.success = false;
     response.message = "Service called in inappropriate state, currently not in GETTING_LOCATION state!";
+    return true;
+  }
+  return false;
+}
+
+// CALCULATING_GOAL --> NAVIGATING_TO_RACK
+bool MulPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "CALCULATING_GOAL")
+  {
+    changeState("NAVIGATING_TO_RACK", "Goal calculated!");
+    response.success = true;
+    response.message = "Goal calculated! Changing state to NAVIGATING_TO_RACK.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in CALCULATING_GOAL state!";
     return true;
   }
   return false;
@@ -421,7 +472,7 @@ void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
   tickTopicsHealth(smartbox_sub_name_);
 }
 
-// GETTING_LOCATION --> NAVIGATING_TO_RACK
+// GETTING_LOCATION --> CALCULATING_GOAL
 void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
   if (current_state_ == "GETTING_LOCATION")
@@ -437,11 +488,11 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
     {
       if (location_received_srv_response.success)
       {
-        RCOMPONENT_INFO_STREAM("Successfully changed state to NAVIGATING_TO_RACK");
+        RCOMPONENT_INFO_STREAM("Successfully changed state to CALCULATING_GOAL");
       }
       else
       {
-        RCOMPONENT_WARN_STREAM("Failed to change state to NAVIGATING_TO_RACK: " << location_received_srv_response.message.c_str());
+        RCOMPONENT_WARN_STREAM("Failed to change state to CALCULATING_GOAL: " << location_received_srv_response.message.c_str());
       }
     }
     else

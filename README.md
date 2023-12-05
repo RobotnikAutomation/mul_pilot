@@ -1,6 +1,6 @@
 # mul_pilot
 
-The mul_pilot package, based on RComponent structure. This package contains the necessary nodes to run a the MUL pilot of the [ODIN project](https://odin-smarthospitals.eu/).
+The mul_pilot package, based on RComponent structure. This package contains the necessary nodes to run during the MUL pilot of the [ODIN project](https://odin-smarthospitals.eu/) in February 2024.
 
 ## Installation
 

@@ -32,6 +32,7 @@ int MulPilot::rosSetup()
   bool not_required = false;
 
   /*** ROS Stuff ***/
+
   //! Publishers
   status_pub_ = pnh_.advertise<std_msgs::String>("status", 10);
   status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
@@ -68,9 +69,10 @@ int MulPilot::rosSetup()
   rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/rack_picked");
   arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_home");
 
-  //! Actions
+  //! Action Clients
   move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
   command_sequencer_ac_ = std::make_shared<actionlib::SimpleActionClient<robot_simple_command_manager_msgs::RobotSimpleCommandAction>>(pnh_, "/robot/command_sequencer/action", true);
+  
   /* ROS Stuff !*/
 
   return rcomponent::OK;
@@ -149,6 +151,7 @@ void MulPilot::failureState()
 }
 
 /*** State Machine ***/
+
 void MulPilot::runRobotStateMachine()
 {
   if (current_state_ == "WAITING_FOR_MISSION")
@@ -192,9 +195,11 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
   navigation_command_sent_ = false;
   pick_command_sent_ = false;
 }
+
 /* State Machine !*/
 
 /*** States ***/
+
 //! WAITING_FOR_MISSION
 void MulPilot::waitingForMissionState()
 {
@@ -252,9 +257,11 @@ void MulPilot::navigatingToHomeState()
 {
   ROS_INFO("NAVIGATING_TO_HOME");
 }
+
 /* States !*/
 
 /*** Transitions ***/
+
 //! WAITING_FOR_MISSION --> GETTING_LOCATION
 bool MulPilot::outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
@@ -349,9 +356,11 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
   }
   return false;
 }
+
 /* Transitions !*/
 
 /* Callbacks */
+
 //! Subscription Callbacks
 void MulPilot::proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
@@ -447,4 +456,5 @@ void MulPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &
     }
   }
 }
+
 /* Callbacks !*/

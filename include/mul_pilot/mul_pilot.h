@@ -31,6 +31,7 @@ public:
 
 protected:
   /*** RComponent Stuff ***/
+  
   //! Setups all the ROS' Stuff
   int rosSetup() override;
   //! Shutdowns all the ROS' Stuff
@@ -49,9 +50,11 @@ protected:
   void emergencyState() override;
   //! Actions performed on Failure state
   void failureState() override;
+  
   /* RComponent Stuff !*/
 
   /*** ROS Stuff ***/
+
   //! Publishers
   ros::Publisher status_pub_;
   ros::Publisher status_stamped_pub_;
@@ -90,7 +93,7 @@ protected:
   ros::ServiceClient rack_picked_client_;
   ros::ServiceClient arrived_at_home_client_;
 
-  //! Actions
+  //! Action Clients
   std::shared_ptr<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>> move_base_ac_;
   move_base_msgs::MoveBaseGoal move_base_goal_;
 
@@ -113,16 +116,15 @@ protected:
   //! Action Callbacks
   void moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result);
   void commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result);
+  
   /* ROS Stuff !*/
 
   /*** MulPilot Stuff ***/
-  std_msgs::String status_;
 
+  std_msgs::String status_;
   string current_state_;
   string previous_state_;
-
   std_msgs::String current_state_ros_;
-
   bool navigation_command_sent_;
   bool pick_command_sent_;
 
@@ -144,6 +146,7 @@ protected:
 
   //! NAVIGATING_TO_HOME
   void navigatingToHomeState();
+
   /* MulPilot Stuff !*/
 };
 

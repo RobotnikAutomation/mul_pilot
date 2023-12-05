@@ -16,12 +16,13 @@ void MulPilot::rosReadParams()
   bool not_required = false;
 
   readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
-  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "robot_status", required);
-  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "robot_result", required);
-  readParam(pnh_, "interface_pub", interface_pub_name_, "interface", required);
-  readParam(pnh_, "proxsensor_status_sub", proxsensor_status_sub_name_, "proxsensor_status", required);
-  readParam(pnh_, "iot_rtls_positions_sub", iot_rtls_positions_sub_name_, "iot_rtls_positions", required);
-  readParam(pnh_, "smartbox_status_sub", smartbox_status_sub_name_, "smartbox_status", required);
+  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/mul_pillot/robot_status", required);
+  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/mul_pillot/robot_result", required);
+  readParam(pnh_, "interface_pub", interface_pub_name_, "/mul_pillot/interface", required);
+  readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/mul_pillot/proxsensor", required);
+  readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pillot/rtls", required);
+  readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pillot/smartbox", required);
+  readParam(pnh_, "pick_sequence", pick_sequence_, "PICK_RACK", required);
 }
 
 int MulPilot::rosSetup()
@@ -44,16 +45,16 @@ int MulPilot::rosSetup()
 
   //! Subscribers
   // Proximity Sensor
-  proxsensor_status_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_status_sub_name_, 10, &MulPilot::proxsensorStatusSubCb, this);
-  addTopicsHealth(&proxsensor_status_sub_, proxsensor_status_sub_name_, 50.0, required);
+  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
+  addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, required);
 
   // RTLS
-  iot_rtls_positions_sub_ = nh_.subscribe<odin_msgs::RTLS>(iot_rtls_positions_sub_name_, 10, &MulPilot::iotRtlsPositionsSubCb, this);
-  addTopicsHealth(&iot_rtls_positions_sub_, iot_rtls_positions_sub_name_, 50.0, required);
+  rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
+  addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, required);
 
   // Smartbox
-  smartbox_status_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_status_sub_name_, 10, &MulPilot::smartboxStatusSubCb, this);
-  addTopicsHealth(&smartbox_status_sub_, smartbox_status_sub_name_, 50.0, required);
+  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
+  addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, required);
 
   //! Service Servers
   out_of_battery_srv_ = pnh_.advertiseService("out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
@@ -63,11 +64,11 @@ int MulPilot::rosSetup()
   arrived_at_home_srv_ = pnh_.advertiseService("arrived_at_home", &MulPilot::arrivedAtHomeServiceCb, this);
 
   //! Service Clients
-  out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/out_of_battery");
-  location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/location_received");
-  arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_rack");
-  rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/rack_picked");
-  arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/mul_pilot/arrived_at_home");
+  out_of_battery_client_ = pnh_.serviceClient<std_srvs::Trigger>("out_of_battery");
+  location_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("location_received");
+  arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("arrived_at_rack");
+  rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("rack_picked");
+  arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("arrived_at_home");
 
   //! Action Clients
   move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
@@ -245,7 +246,7 @@ void MulPilot::pickingRackState()
     ROS_INFO("Sending sequence to pick the rack...");
 
     // TODO: Set correct command
-    command_sequencer_goal_.command.command = "PICK_RACK";
+    command_sequencer_goal_.command.command = pick_sequence_;
     command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&MulPilot::commandSequencerResultCb, this, _1, _2));
 
     pick_command_sent_ = true;
@@ -362,22 +363,22 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Callbacks */
 
 //! Subscription Callbacks
-void MulPilot::proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
+void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
   RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + msg->version);
-  tickTopicsHealth("proxsensor_status");
+  tickTopicsHealth(proxsensor_sub_name_);
 }
 
-void MulPilot::iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
+void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
 {
   RCOMPONENT_WARN_STREAM("Received msg (RTLS): " + msg->version);
-  tickTopicsHealth("iot_rtls_positions");
+  tickTopicsHealth(rtls_sub_name_);
 }
 
-void MulPilot::smartboxStatusSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
+void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 {
   RCOMPONENT_WARN_STREAM("Received msg (Smartbox): " + msg->version);
-  tickTopicsHealth("smartbox_status");
+  tickTopicsHealth(smartbox_sub_name_);
 }
 
 //! Action Callbacks

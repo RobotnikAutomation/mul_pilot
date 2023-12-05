@@ -70,14 +70,14 @@ protected:
   string interface_pub_name_;
 
   //! Subscribers
-  ros::Subscriber proxsensor_status_sub_;
-  string proxsensor_status_sub_name_;
+  ros::Subscriber proxsensor_sub_;
+  string proxsensor_sub_name_;
 
-  ros::Subscriber iot_rtls_positions_sub_;
-  string iot_rtls_positions_sub_name_;
+  ros::Subscriber rtls_sub_;
+  string rtls_sub_name_;
 
-  ros::Subscriber smartbox_status_sub_;
-  string smartbox_status_sub_name_;
+  ros::Subscriber smartbox_sub_;
+  string smartbox_sub_name_;
 
   //! Services Servers
   ros::ServiceServer out_of_battery_srv_;
@@ -102,9 +102,9 @@ protected:
 
   //! Callbacks
   //! Subscription Callbacks
-  void proxsensorStatusSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
-  void iotRtlsPositionsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
-  void smartboxStatusSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
+  void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
+  void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
+  void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
 
   //! Transition Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
@@ -127,6 +127,7 @@ protected:
   std_msgs::String current_state_ros_;
   bool navigation_command_sent_;
   bool pick_command_sent_;
+  string pick_sequence_;
 
   //! State Machine
   void runRobotStateMachine();

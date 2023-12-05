@@ -10,18 +10,21 @@
 	<!-- Desired frequency -->
 	<arg name="desired_freq" default="10.0" />
 
-	<!-- mqtt-odin-platform-robot-status-kafka -->
-	<arg name="robot_status_pub" default="robot_status" />
-	<!-- mqtt-odin-platform-robot-result-kafka -->
-	<arg name="robot_result_pub" default="robot_result" />
-	<!-- mqtt-odin-platform-interface-kafka -->
-	<arg name="interface_pub" default="interface" />
-	<!-- mqtt-odin-platform-proxsensor-status-kafka -->
-	<arg name="proxsensor_status_sub" default="proxsensor_status" />
-	<!-- kafka-odin-platform-iot-rtls-positions-mqtt -->
-	<arg name="iot_rtls_positions_sub" default="iot_rtls_positions" />
-	<!-- mqtt-odin-platform-smartbox-status-kafka -->
-	<arg name="smartbox_status_sub" default="smartbox_status" />
+	<!-- Robot Status: mqtt-odin-platform-robot-status-kafka -->
+	<arg name="robot_status_pub" default="/mul_pilot/robot_status" />
+	<!-- Robot Result: mqtt-odin-platform-robot-result-kafka -->
+	<arg name="robot_result_pub" default="/mul_pilot/robot_result" />
+	<!-- Interface: mqtt-odin-platform-interface-kafka -->
+	<arg name="interface_pub" default="/mul_pilot/interface" />
+	<!-- Proximity Sensor: mqtt-odin-platform-proxsensor-status-kafka -->
+	<arg name="proxsensor_sub" default="/mul_pilot/proxsensor" />
+	<!-- RTLS: kafka-odin-platform-iot-rtls-positions-mqtt -->
+	<arg name="rtls_sub" default="/mul_pilot/rtls" />
+	<!-- Smartbox: mqtt-odin-platform-smartbox-status-kafka -->
+	<arg name="smartbox_sub" default="/mul_pilot/smartbox" />
+
+	<!-- Pick sequence -->
+	<arg name="pick_sequence" default="PICK_RACK"/>
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />
@@ -33,9 +36,10 @@
 			<param name="robot_status_pub" value="$(arg robot_status_pub)"/>
 			<param name="robot_result_pub" value="$(arg robot_result_pub)"/>
 			<param name="interface_pub" value="$(arg interface_pub)"/>
-			<param name="proxsensor_status_sub" value="$(arg proxsensor_status_sub)"/>
-			<param name="iot_rtls_positions_sub" value="$(arg iot_rtls_positions_sub)"/>
-			<param name="smartbox_status_sub" value="$(arg smartbox_status_sub)"/>
+			<param name="proxsensor_sub" value="$(arg proxsensor_sub)"/>
+			<param name="rtls_sub" value="$(arg rtls_sub)"/>
+			<param name="smartbox_sub" value="$(arg smartbox_sub)"/>
+			<param name="pick_sequence" value="$(arg pick_sequence)"/>
 		</node>
 	</group>
 

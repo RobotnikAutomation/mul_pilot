@@ -58,7 +58,6 @@ protected:
   //! Publishers
   ros::Publisher status_pub_;
   ros::Publisher status_stamped_pub_;
-  ros::Publisher state_pub_;
 
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;

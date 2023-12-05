@@ -37,7 +37,6 @@ int MulPilot::rosSetup()
   //! Publishers
   status_pub_ = pnh_.advertise<std_msgs::String>("status", 10);
   status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
-  state_pub_ = pnh_.advertise<std_msgs::String>("rb1_state", 10);
 
   robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
@@ -106,9 +105,6 @@ void MulPilot::initState()
 
   current_state_ = "WAITING_FOR_MISSION";
   previous_state_ = "";
-
-  current_state_ros_.data = current_state_;
-  state_pub_.publish(current_state_ros_);
 
   navigation_command_sent_ = false;
   pick_command_sent_ = false;
@@ -190,9 +186,6 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
   current_state_ = next_state;
   previous_state_ = temp_state;
 
-  current_state_ros_.data = current_state_;
-  state_pub_.publish(current_state_ros_);
-
   navigation_command_sent_ = false;
   pick_command_sent_ = false;
 }
@@ -222,8 +215,8 @@ void MulPilot::navigatingToRackState()
     ROS_INFO("Sending command to navigate to the rack...");
 
     // TODO: Change this to the correct frame and coordinates
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
     move_base_goal_.target_pose.pose.position.x = 3.0;
     move_base_goal_.target_pose.pose.position.y = -1.0;
     move_base_goal_.target_pose.pose.position.z = 0.0;

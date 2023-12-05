@@ -1,6 +1,6 @@
 # mul_pilot
 
-The mul_pilot package, based on RComponent structure. This package contains the necessary nodes to run a the MUL pilot of the ODIN project.
+The mul_pilot package, based on RComponent structure. This package contains the necessary nodes to run a the MUL pilot of the [ODIN project](https://odin-smarthospitals.eu/).
 
 ## Installation
 
@@ -9,7 +9,7 @@ The mul_pilot package, based on RComponent structure. This package contains the 
 
 ## 1 mul_pilot_node
 
-This node implements the RB-1's state machine. The default state when starting the node is WAITING_FOR_MISSION.
+This node implements the RB-1's state machine. The default state when starting the node is **WAITING_FOR_MISSION.**
 
 <p align="center">
   <img src="docs/diagrams/rb1.drawio.svg" alt="RB-1's state machine" />

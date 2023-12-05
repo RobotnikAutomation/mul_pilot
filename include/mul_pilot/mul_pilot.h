@@ -72,11 +72,11 @@ protected:
   ros::Subscriber proxsensor_sub_;
   string proxsensor_sub_name_;
 
-  ros::Subscriber rtls_sub_;
-  string rtls_sub_name_;
-
   ros::Subscriber smartbox_sub_;
   string smartbox_sub_name_;
+
+  ros::Subscriber rtls_sub_;
+  string rtls_sub_name_;
 
   //! Services Servers
   ros::ServiceServer out_of_battery_srv_;

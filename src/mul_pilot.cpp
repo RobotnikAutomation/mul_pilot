@@ -47,13 +47,13 @@ int MulPilot::rosSetup()
   proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
   addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, not_required);
 
-  // RTLS
-  rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
-  addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
-
   // Smartbox
   smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
+
+  // RTLS
+  rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
+  addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
 
   //! Service Servers
   out_of_battery_srv_ = pnh_.advertiseService("/mul_pilot/out_of_battery", &MulPilot::outOfBatteryServiceCb, this);

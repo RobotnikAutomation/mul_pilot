@@ -203,19 +203,19 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
 //! WAITING_FOR_MISSION
 void MulPilot::waitingForMissionState()
 {
-  ROS_INFO("WAITING_FOR_MISSION");
+  RCOMPONENT_INFO_STREAM("WAITING_FOR_MISSION");
 }
 
 //! GETTING_LOCATION
 void MulPilot::gettingLocationState()
 {
-  ROS_INFO("GETTING_LOCATION");
+  RCOMPONENT_INFO_STREAM("GETTING_LOCATION");
 }
 
 //! CALCULATING_GOAL
 void MulPilot::calculatingGoalState()
 {
-  ROS_INFO("CALCULATING_GOAL");
+  RCOMPONENT_INFO_STREAM("CALCULATING_GOAL");
 
   // TODO: Get correct coordinates from docking station location
   double distance1;
@@ -260,12 +260,12 @@ void MulPilot::calculatingGoalState()
 //! NAVIGATING_TO_RACK
 void MulPilot::navigatingToRackState()
 {
-  ROS_INFO("NAVIGATING_TO_RACK");
+  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_RACK");
   if (!navigation_command_sent_)
   {
-    ROS_INFO("Sending command to navigate to the rack...");
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
 
-    // TODO: Change this to the correct frame and coordinates
+    // TODO: Set the correct frame and coordinates
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
     move_base_goal_.target_pose.pose.position.x = x_goal_;
@@ -284,10 +284,10 @@ void MulPilot::navigatingToRackState()
 //! PICKING_RACK
 void MulPilot::pickingRackState()
 {
-  ROS_INFO("PICKING_RACK");
+  RCOMPONENT_INFO_STREAM("PICKING_RACK");
   if (!pick_command_sent_)
   {
-    ROS_INFO("Sending sequence to pick the rack...");
+    RCOMPONENT_INFO_STREAM("Sending sequence to pick the rack...");
 
     // TODO: Set correct command
     command_sequencer_goal_.command.command = pick_sequence_;
@@ -300,7 +300,7 @@ void MulPilot::pickingRackState()
 //! NAVIGATING_TO_HOME
 void MulPilot::navigatingToHomeState()
 {
-  ROS_INFO("NAVIGATING_TO_HOME");
+  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_HOME");
 }
 
 /* States !*/

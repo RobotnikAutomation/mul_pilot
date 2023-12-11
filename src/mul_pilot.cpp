@@ -236,6 +236,25 @@ void MulPilot::calculatingGoalState()
     y_goal_ = y2_;
     z_goal_ = z2_;
   }
+
+  std_srvs::TriggerRequest goal_calculated_srv_request;
+  std_srvs::TriggerResponse goal_calculated_srv_response;
+
+  if (goalCalculatedServiceCb(goal_calculated_srv_request, goal_calculated_srv_response))
+  {
+    if (goal_calculated_srv_response.success)
+    {
+      RCOMPONENT_INFO_STREAM("Successfully switched from CALCULATING_GOAL to NAVIGATING_TO_RACK");
+    }
+    else
+    {
+      RCOMPONENT_WARN_STREAM("Failed to switch from CALCULATING_GOAL to NAVIGATING_TO_RACK: " << goal_calculated_srv_response.message.c_str());
+    }
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/goal_calculated");
+  }
 }
 
 //! NAVIGATING_TO_RACK

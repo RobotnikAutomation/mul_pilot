@@ -295,7 +295,7 @@ bool MulPilot::outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_sr
   {
     changeState("GETTING_LOCATION", "Smartbox is out of battery!");
     response.success = true;
-    response.message = "Smartbox is out of battery! Changing state to GETTING_LOCATION.";
+    response.message = "Smartbox is out of battery! Switching from WAITING_FOR_MISSION to GETTING_LOCATION.";
     return true;
   }
   else
@@ -314,7 +314,7 @@ bool MulPilot::locationReceivedServiceCb(std_srvs::Trigger::Request &request, st
   {
     changeState("CALCULATING_GOAL", "Location received from RTLS: x=" + std::to_string(x_) + ", y=" + std::to_string(y_) + ", z=" + std::to_string(z_));
     response.success = true;
-    response.message = "Location received! Changing state to CALCULATING_GOAL.";
+    response.message = "Location received! Switching from GETTING_LOCATION to CALCULATING_GOAL.";
     return true;
   }
   else
@@ -333,7 +333,7 @@ bool MulPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_
   {
     changeState("NAVIGATING_TO_RACK", "Goal calculated!");
     response.success = true;
-    response.message = "Goal calculated! Changing state to NAVIGATING_TO_RACK.";
+    response.message = "Goal calculated! Switching from CALCULATING_GOAL to NAVIGATING_TO_RACK.";
     return true;
   }
   else
@@ -352,7 +352,7 @@ bool MulPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_s
   {
     changeState("PICKING_RACK", "Arrived at rack!");
     response.success = true;
-    response.message = "Arrived at rack! Changing state to PICKING_RACK.";
+    response.message = "Arrived at rack! Switching from NAVIGATING_TO_RACK to PICKING_RACK.";
     return true;
   }
   else
@@ -371,7 +371,7 @@ bool MulPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs
   {
     changeState("NAVIGATING_TO_HOME", "Rack picked!");
     response.success = true;
-    response.message = "Rack picked! Changing state to NAVIGATING_TO_HOME.";
+    response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_HOME.";
     return true;
   }
   else
@@ -390,7 +390,7 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
   {
     changeState("WAITING_FOR_MISSION", "Arrived at home!");
     response.success = true;
-    response.message = "Arrived at home! Changing state to WAITING_FOR_MISSION.";
+    response.message = "Arrived at home! Switching from NAVIGATING_TO_HOME to WAITING_FOR_MISSION.";
     return true;
   }
   else
@@ -424,11 +424,11 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
       {
         if (out_of_battery_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_FOR_MISSION to GETTING_LOCATION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_FOR_MISSION to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
         }
       }
       else
@@ -456,11 +456,11 @@ void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
       {
         if (out_of_battery_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully changed state to GETTING_LOCATION");
+          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_FOR_MISSION to GETTING_LOCATION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to change state to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_FOR_MISSION to GETTING_LOCATION: " << out_of_battery_srv_response.message.c_str());
         }
       }
       else
@@ -488,11 +488,11 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
     {
       if (location_received_srv_response.success)
       {
-        RCOMPONENT_INFO_STREAM("Successfully changed state to CALCULATING_GOAL");
+        RCOMPONENT_INFO_STREAM("Successfully switched from GETTING_LOCATION to CALCULATING_GOAL");
       }
       else
       {
-        RCOMPONENT_WARN_STREAM("Failed to change state to CALCULATING_GOAL: " << location_received_srv_response.message.c_str());
+        RCOMPONENT_WARN_STREAM("Failed to switch from GETTING_LOCATION to CALCULATING_GOAL: " << location_received_srv_response.message.c_str());
       }
     }
     else
@@ -511,18 +511,18 @@ void MulPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, c
     std_srvs::TriggerRequest move_base_srv_request;
     std_srvs::TriggerResponse move_base_srv_response;
 
-    //! NAVIGATING_TO_RACK
+    // NAVIGATING_TO_RACK --> PICKING_RACK
     if (current_state_ == "NAVIGATING_TO_RACK")
     {
       if (arrivedAtRackServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully changed state to PICKING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_RACK to PICKING_RACK");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to change state to PICKING_RACK: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_RACK to PICKING_RACK: " << move_base_srv_response.message.c_str());
         }
       }
       else
@@ -531,18 +531,18 @@ void MulPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, c
       }
     }
 
-    //! NAVIGATING_TO_HOME
+    // NAVIGATING_TO_HOME --> WAITING_FOR_MISSION
     if (current_state_ == "NAVIGATING_TO_HOME")
     {
       if (arrivedAtHomeServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully changed state to WAITING_FOR_MISSION");
+          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_HOME to WAITING_FOR_MISSION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to change state to WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_HOME to WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
         }
       }
       else
@@ -560,18 +560,18 @@ void MulPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &
     std_srvs::TriggerRequest command_sequencer_srv_request;
     std_srvs::TriggerResponse command_sequencer_srv_response;
 
-    //! PICKING_RACK
+    // PICKING_RACK --> NAVIGATING_TO_HOME
     if (current_state_ == "PICKING_RACK")
     {
       if (rackPickedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
       {
         if (command_sequencer_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully changed state to NAVIGATING_TO_HOME");
+          RCOMPONENT_INFO_STREAM("Successfully switched from PICKING_RACK to NAVIGATING_TO_HOME");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to change state to NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from PICKING_RACK to NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else

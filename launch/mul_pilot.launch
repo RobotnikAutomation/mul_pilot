@@ -19,12 +19,12 @@
 	<!-- Proximity Sensor: mqtt-odin-platform-proxsensor-status-kafka -->
 	<arg name="proxsensor_sub" default="/mul_pilot/proxsensor" />
 	<!-- RTLS: kafka-odin-platform-iot-rtls-positions-mqtt -->
-	<arg name="rtls_sub" default="/mul_pilot/rtls" />
+	<arg name="rtls_sub" default="/mul_pilot/RTLS" />
 	<!-- Smartbox: mqtt-odin-platform-smartbox-status-kafka -->
 	<arg name="smartbox_sub" default="/mul_pilot/smartbox" />
 
 	<!-- Pick sequence -->
-	<arg name="pick_sequence" default="PICK_RACK"/>
+	<arg name="pick_sequence" default="ELEVATOR_UP_DOWN_VICTOR"/>
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />

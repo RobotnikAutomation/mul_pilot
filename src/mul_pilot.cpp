@@ -22,7 +22,7 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/mul_pilot/proxsensor", required);
   readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pilot/rtls", required);
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
-  readParam(pnh_, "pick_sequence", pick_sequence_, "PICK_RACK", required);
+  readParam(pnh_, "pick_sequence", pick_sequence_, "ELEVATOR_UP_DOWN_VICTOR", required);
 }
 
 int MulPilot::rosSetup()
@@ -431,10 +431,10 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    std::string status = msg->data.Status;
-    RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + status);
+    std::string message = msg->message;
+    RCOMPONENT_WARN_STREAM("Received msg (Proximity Sensor): " + message);
 
-    if (status == "out_of_battery")
+    if (message == "action needed")
     {
       std_srvs::TriggerRequest out_of_battery_srv_request;
       std_srvs::TriggerResponse out_of_battery_srv_response;

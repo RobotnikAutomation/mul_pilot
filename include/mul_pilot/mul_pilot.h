@@ -140,11 +140,11 @@ protected:
   double x_{0.0};
   double y_{0.0};
   double z_{0.0};
-  double x1_{0.0};
-  double y1_{0.0};
+  double x1_{0.0993};
+  double y1_{0.3007};
   double z1_{0.0};
-  double x2_{0.0};
-  double y2_{0.0};
+  double x2_{-0.84};
+  double y2_{1.5174};
   double z2_{0.0};
   double x_goal_{0.0};
   double y_goal_{0.0};

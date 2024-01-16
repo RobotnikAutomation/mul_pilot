@@ -22,9 +22,15 @@
 	<arg name="smartbox_sub" default="/mul_pilot/smartbox" />
 	<!-- HMI (sub): kafka-odin-platform-interface-mqtt -->
 	<arg name="hmi_sub" default="/mul_pilot/hmi" />
+	<!-- Elevator (sub) -->
+	<arg name="elevator_sub" default="" />
 
 	<!-- Pick sequence -->
-	<arg name="pick_sequence" default="ELEVATOR_UP_DOWN_VICTOR"/>
+	<arg name="pick_sequence" default="PICK_SEQUENCE"/>
+	<!-- Place sequence -->
+	<arg name="place_sequence" default="PLACE_SEQUENCE"/>
+	<!-- Release sequence -->
+	<arg name="release_sequence" default="RELEASE_SEQUENCE"/>
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />
@@ -39,7 +45,10 @@
 			<param name="rtls_sub" value="$(arg rtls_sub)"/>
 			<param name="smartbox_sub" value="$(arg smartbox_sub)"/>
 			<param name="hmi_sub" value="$(arg hmi_sub)"/>
+			<param name="elevator_sub" value="$(arg elevator_sub)"/>
 			<param name="pick_sequence" value="$(arg pick_sequence)"/>
+			<param name="place_sequence" value="$(arg place_sequence)"/>
+			<param name="release_sequence" value="$(arg release_sequence)"/>
 		</node>
 	<!-- </group> -->
 

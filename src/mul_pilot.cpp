@@ -18,10 +18,10 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
   readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/mul_pilot/robot_status", required);
   readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/mul_pilot/robot_result", required);
-  readParam(pnh_, "interface_pub", interface_pub_name_, "/mul_pilot/interface", required);
   readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/mul_pilot/proxsensor", required);
   readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pilot/rtls", required);
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
+  readParam(pnh_, "hmi_sub", hmi_sub_name_, "/mul_pilot/hmi", required);
   readParam(pnh_, "pick_sequence", pick_sequence_, "ELEVATOR_UP_DOWN_VICTOR", required);
 }
 
@@ -40,7 +40,6 @@ int MulPilot::rosSetup()
 
   robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
-  interface_pub_ = pnh_.advertise<odin_msgs::RobotTask>(interface_pub_name_, 10);
 
   //! Subscribers
   // Proximity Sensor
@@ -54,6 +53,10 @@ int MulPilot::rosSetup()
   // RTLS
   rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
+
+  // HMI
+  hmi_sub_ = nh_.subscribe<odin_msgs::HMI>(hmi_sub_name_, 10, &MulPilot::hmiSubCb, this);
+  addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
 
   //! Service Servers
   out_of_battery_srv_ = pnh_.advertiseService("/mul_pilot/out_of_battery", &MulPilot::outOfBatteryServiceCb, this);
@@ -520,6 +523,11 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
     }
   }
   tickTopicsHealth(rtls_sub_name_);
+}
+
+void MulPilot::hmiSubCb(const odin_msgs::HMI::ConstPtr &msg)
+{
+  tickTopicsHealth(hmi_sub_name_);
 }
 
 //! Action Callbacks

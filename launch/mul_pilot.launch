@@ -10,18 +10,18 @@
 	<!-- Desired frequency -->
 	<arg name="desired_freq" default="10.0" />
 
-	<!-- Robot Status: mqtt-odin-platform-robot-status-kafka -->
+	<!-- Robot Status (pub): mqtt-odin-platform-robot-status-kafka -->
 	<arg name="robot_status_pub" default="/mul_pilot/robot_status" />
-	<!-- Robot Result: mqtt-odin-platform-robot-result-kafka -->
+	<!-- Robot Result (pub): mqtt-odin-platform-robot-result-kafka -->
 	<arg name="robot_result_pub" default="/mul_pilot/robot_result" />
-	<!-- Interface: mqtt-odin-platform-interface-kafka -->
-	<arg name="interface_pub" default="/mul_pilot/interface" />
-	<!-- Proximity Sensor: mqtt-odin-platform-proxsensor-status-kafka -->
+	<!-- Proximity Sensor (sub): kafka-odin-platform-proxsensor-status-mqtt -->
 	<arg name="proxsensor_sub" default="/mul_pilot/proxsensor" />
-	<!-- RTLS: kafka-odin-platform-iot-rtls-positions-mqtt -->
+	<!-- RTLS (sub): kafka-odin-platform-iot-rtls-positions-mqqt -->
 	<arg name="rtls_sub" default="/mul_pilot/RTLS" />
-	<!-- Smartbox: mqtt-odin-platform-smartbox-status-kafka -->
+	<!-- Smartbox (sub): kafka-odin-platform-smartbox-status-mqtt -->
 	<arg name="smartbox_sub" default="/mul_pilot/smartbox" />
+	<!-- HMI (sub): kafka-odin-platform-interface-mqtt -->
+	<arg name="hmi_sub" default="/mul_pilot/hmi" />
 
 	<!-- Pick sequence -->
 	<arg name="pick_sequence" default="ELEVATOR_UP_DOWN_VICTOR"/>
@@ -35,10 +35,10 @@
 			<param name="desired_freq" value="$(arg desired_freq)"/>
 			<param name="robot_status_pub" value="$(arg robot_status_pub)"/>
 			<param name="robot_result_pub" value="$(arg robot_result_pub)"/>
-			<param name="interface_pub" value="$(arg interface_pub)"/>
 			<param name="proxsensor_sub" value="$(arg proxsensor_sub)"/>
 			<param name="rtls_sub" value="$(arg rtls_sub)"/>
 			<param name="smartbox_sub" value="$(arg smartbox_sub)"/>
+			<param name="hmi_sub" value="$(arg hmi_sub)"/>
 			<param name="pick_sequence" value="$(arg pick_sequence)"/>
 		</node>
 	<!-- </group> -->

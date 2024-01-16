@@ -8,6 +8,7 @@
 #include <math.h>
 
 // Msgs
+#include <odin_msgs/HMI.h>
 #include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
@@ -65,9 +66,6 @@ protected:
   ros::Publisher robot_result_pub_;
   string robot_result_pub_name_;
 
-  ros::Publisher interface_pub_;
-  string interface_pub_name_;
-
   //! Subscribers
   ros::Subscriber proxsensor_sub_;
   string proxsensor_sub_name_;
@@ -77,6 +75,9 @@ protected:
 
   ros::Subscriber rtls_sub_;
   string rtls_sub_name_;
+
+  ros::Subscriber hmi_sub_;
+  string hmi_sub_name_;
 
   //! Services Servers
   ros::ServiceServer out_of_battery_srv_;
@@ -106,6 +107,7 @@ protected:
   void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
   void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
   void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
+  void hmiSubCb(const odin_msgs::HMI::ConstPtr &msg);
 
   //! Service Callbacks
   bool outOfBatteryServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   odin_msgs
   rcomponent
   robot_simple_command_manager_msgs
+  robotnik_msgs
   roscpp
   std_msgs
   std_srvs
@@ -24,6 +25,7 @@ catkin_package(
     odin_msgs
     rcomponent
     robot_simple_command_manager_msgs
+    robotnik_msgs
     roscpp
     std_msgs
     std_srvs

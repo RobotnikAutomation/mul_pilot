@@ -14,6 +14,7 @@
 #include <odin_msgs/RobotTask.h>
 #include <odin_msgs/RTLS.h>
 #include <odin_msgs/SmartboxStatus.h>
+#include <robotnik_msgs/ElevatorStatus.h>
 #include <robotnik_msgs/StringStamped.h>
 #include <std_msgs/String.h>
 
@@ -117,7 +118,7 @@ protected:
   void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
   void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
   void hmiSubCb(const odin_msgs::HMI::ConstPtr &msg);
-  void elevatorSubCb(const std_msgs::String::ConstPtr &msg);
+  void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
 
   //! Service Callbacks
   // WAITING_FOR_MISSION --> CHECKING_ELEVATOR

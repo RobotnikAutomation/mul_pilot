@@ -23,7 +23,7 @@
 	<!-- HMI (sub): kafka-odin-platform-interface-mqtt -->
 	<arg name="hmi_sub" default="/mul_pilot/hmi" />
 	<!-- Elevator (sub) -->
-	<arg name="elevator_sub" default="" />
+	<arg name="elevator_sub" default="/robot/robotnik_base_control/elevator_status" />
 
 	<!-- Pick sequence -->
 	<arg name="pick_sequence" default="PICK_SEQUENCE"/>

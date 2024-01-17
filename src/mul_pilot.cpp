@@ -22,7 +22,7 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "rtls_sub", rtls_sub_name_, "/mul_pilot/rtls", required);
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
   readParam(pnh_, "hmi_sub", hmi_sub_name_, "/mul_pilot/hmi", required);
-  readParam(pnh_, "elevator_sub", elevator_sub_name_, "", required);
+  readParam(pnh_, "elevator_sub", elevator_sub_name_, "/robot/robotnik_base_control/elevator_status", required);
   readParam(pnh_, "pick_sequence", pick_sequence_, "PICK_SEQUENCE", required);
   readParam(pnh_, "place_sequence", place_sequence_, "PLACE_SEQUENCE", required);
   readParam(pnh_, "release_sequence", release_sequence_, "RELEASE_SEQUENCE", required);
@@ -51,7 +51,7 @@ int MulPilot::rosSetup()
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
   hmi_sub_ = nh_.subscribe<odin_msgs::HMI>(hmi_sub_name_, 10, &MulPilot::hmiSubCb, this);
   addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
-  elevator_sub_ = nh_.subscribe<std_msgs::String>(elevator_sub_name_, 10, &MulPilot::elevatorSubCb, this);
+  elevator_sub_ = nh_.subscribe<robotnik_msgs::ElevatorStatus>(elevator_sub_name_, 10, &MulPilot::elevatorSubCb, this);
   addTopicsHealth(&elevator_sub_, elevator_sub_name_, 50.0, not_required);
 
   //! Service Servers
@@ -849,11 +849,11 @@ void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 }
 
 // CHECKING_ELEVATOR --> GETTING_RACK_POSITION or NAVIGATING_TO_POI
-void MulPilot::elevatorSubCb(const std_msgs::String::ConstPtr &msg)
+void MulPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg)
 {
   if (current_state_ == "CHECKING_ELEVATOR")
   {
-    std::string message = msg->data;
+    std::string message = msg->position;
     RCOMPONENT_WARN_STREAM("Received message from Elevator: " + message);
 
     // CHECKING_ELEVATOR --> GETTING_RACK_POSITION

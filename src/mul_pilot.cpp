@@ -43,11 +43,11 @@ int MulPilot::rosSetup()
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
 
   //! Subscribers
-  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
+  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensorBase>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
   addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, not_required);
-  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
+  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatusBase>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
-  rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
+  rtls_sub_ = nh_.subscribe<odin_msgs::RTLSBase>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
   hmi_sub_ = nh_.subscribe<odin_msgs::HMIBase>(hmi_sub_name_, 10, &MulPilot::hmiSubCb, this);
   addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
@@ -780,11 +780,11 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Callbacks */
 //! Subscription Callbacks
 // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
+void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg)
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    std::string message = msg->message;
+    std::string message = msg->data.message;
     RCOMPONENT_WARN_STREAM("Received message from Proximity Sensor: " + message);
 
     if (message == "action needed")
@@ -792,8 +792,8 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
       std_srvs::TriggerRequest mission_received_srv_request;
       std_srvs::TriggerResponse mission_received_srv_response;
 
-      float poi_x_ = msg->data.Posx;
-      float poi_y_ = msg->data.Posy;
+      float poi_x_ = msg->data.data.Posx;
+      float poi_y_ = msg->data.data.Posy;
       RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_);
 
       if (missionReceivedServiceCb(mission_received_srv_request, mission_received_srv_response))
@@ -817,11 +817,11 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 }
 
 // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
+void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatusBase::ConstPtr &msg)
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    float battery = msg->data.battery;
+    float battery = msg->data.data.battery;
 
     if (battery < 10.0)
     {
@@ -910,13 +910,13 @@ void MulPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg)
 }
 
 // GETTING_RACK_POSITION --> CALCULATING_GOAL
-void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
+void MulPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "GETTING_RACK_POSITION")
   {
-    rack_x_ = msg->data.x;
-    rack_y_ = msg->data.y;
-    rack_z_ = msg->data.z;
+    rack_x_ = msg->data.data.x;
+    rack_y_ = msg->data.data.y;
+    rack_z_ = msg->data.data.z;
 
     std_srvs::TriggerRequest rack_position_received_srv_request;
     std_srvs::TriggerResponse rack_position_received_srv_response;

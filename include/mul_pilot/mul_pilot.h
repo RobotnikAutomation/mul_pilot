@@ -9,11 +9,11 @@
 
 // Msgs
 #include <odin_msgs/HMIBase.h>
-#include <odin_msgs/ProxSensor.h>
+#include <odin_msgs/ProxSensorBase.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
-#include <odin_msgs/RTLS.h>
-#include <odin_msgs/SmartboxStatus.h>
+#include <odin_msgs/RTLSBase.h>
+#include <odin_msgs/SmartboxStatusBase.h>
 #include <robotnik_msgs/ElevatorStatus.h>
 #include <robotnik_msgs/StringStamped.h>
 #include <std_msgs/String.h>
@@ -114,9 +114,9 @@ protected:
 
   //! Callbacks
   //! Subscription Callbacks
-  void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
-  void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
-  void rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg);
+  void proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg);
+  void smartboxSubCb(const odin_msgs::SmartboxStatusBase::ConstPtr &msg);
+  void rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg);
   void hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg);
   void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
 

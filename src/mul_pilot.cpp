@@ -49,7 +49,7 @@ int MulPilot::rosSetup()
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
   rtls_sub_ = nh_.subscribe<odin_msgs::RTLS>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
-  hmi_sub_ = nh_.subscribe<odin_msgs::HMI>(hmi_sub_name_, 10, &MulPilot::hmiSubCb, this);
+  hmi_sub_ = nh_.subscribe<odin_msgs::HMIBase>(hmi_sub_name_, 10, &MulPilot::hmiSubCb, this);
   addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
   elevator_sub_ = nh_.subscribe<robotnik_msgs::ElevatorStatus>(elevator_sub_name_, 10, &MulPilot::elevatorSubCb, this);
   addTopicsHealth(&elevator_sub_, elevator_sub_name_, 50.0, not_required);
@@ -940,25 +940,25 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLS::ConstPtr &msg)
   tickTopicsHealth(rtls_sub_name_);
 }
 
-void MulPilot::hmiSubCb(const odin_msgs::HMI::ConstPtr &msg)
+void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 {
   // WAITING_IN_POI --> NAVIGATING_TO_LAB
   if (current_state_ == "WAITING_IN_POI")
   {
-    std::string message = msg->data.taskType;
+    std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     if (message == "GO_TO_LAB")
     {
-      if (msg->data.startLocation.position.size() == 3 && msg->data.startLocation.orientation.size() == 4)
+      if (msg->data.data.startLocation.position.size() == 3 && msg->data.data.startLocation.orientation.size() == 4)
       {
-        lab_pos_x_ = msg->data.startLocation.position[0];
-        lab_pos_y_ = msg->data.startLocation.position[1];
-        lab_pos_z_ = msg->data.startLocation.position[2];
-        lab_ori_x_ = msg->data.startLocation.orientation[0];
-        lab_ori_y_ = msg->data.startLocation.orientation[1];
-        lab_ori_z_ = msg->data.startLocation.orientation[2];
-        lab_ori_w_ = msg->data.startLocation.orientation[3];
+        lab_pos_x_ = msg->data.data.startLocation.position[0];
+        lab_pos_y_ = msg->data.data.startLocation.position[1];
+        lab_pos_z_ = msg->data.data.startLocation.position[2];
+        lab_ori_x_ = msg->data.data.startLocation.orientation[0];
+        lab_ori_y_ = msg->data.data.startLocation.orientation[1];
+        lab_ori_z_ = msg->data.data.startLocation.orientation[2];
+        lab_ori_w_ = msg->data.data.startLocation.orientation[3];
       }
       else
       {
@@ -990,7 +990,7 @@ void MulPilot::hmiSubCb(const odin_msgs::HMI::ConstPtr &msg)
   // WAITING_IN_LAB --> RELEASING_RACK or HOMING_RACK
   if (current_state_ == "WAITING_IN_LAB")
   {
-    std::string message = msg->data.taskType;
+    std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // WAITING_IN_LAB --> RELEASING_RACK

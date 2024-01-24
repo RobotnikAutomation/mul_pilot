@@ -20,7 +20,7 @@
 	<arg name="rtls_sub" default="/mul_pilot/RTLS" />
 	<!-- Smartbox (sub): kafka-odin-platform-smartbox-status-mqtt -->
 	<arg name="smartbox_sub" default="/mul_pilot/smartbox" />
-	<!-- HMI (sub): kafka-odin-platform-interface-mqtt -->
+	<!-- HMI (sub): mqtt-odin-platform-interface-kafka -->
 	<arg name="hmi_sub" default="/mul_pilot/hmi" />
 	<!-- Elevator (sub) -->
 	<arg name="elevator_sub" default="/robot/robotnik_base_control/elevator_status" />

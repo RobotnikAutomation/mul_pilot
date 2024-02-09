@@ -353,7 +353,6 @@ void MulPilot::navigatingToPoiState()
   {
     RCOMPONENT_INFO_STREAM("Sending command to navigate to the POI...");
     RCOMPONENT_INFO_STREAM("x: " << poi_x_ << ", y: " << poi_y_);
-    
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
@@ -799,8 +798,8 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 
       poi_x_ = msg->data.Posx;
       poi_y_ = msg->data.Posy;
-      //RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ << ", rot_w=" << poi_rot_w_);
-      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ );
+      // RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ << ", rot_w=" << poi_rot_w_);
+      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_);
       if (missionReceivedServiceCb(mission_received_srv_request, mission_received_srv_response))
       {
         if (mission_received_srv_response.success)
@@ -919,27 +918,30 @@ void MulPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "GETTING_RACK_POSITION")
   {
-    rack_x_ = msg->data.data.x;
-    rack_y_ = msg->data.data.y;
-    rack_z_ = msg->data.data.z;
-
-    std_srvs::TriggerRequest rack_position_received_srv_request;
-    std_srvs::TriggerResponse rack_position_received_srv_response;
-
-    if (rackPositionReceivedServiceCb(rack_position_received_srv_request, rack_position_received_srv_response))
+    if (msg->data.id == "ble-pd-601283DE0245" or msg->data.id == "ble-pd-601283DE0246")
     {
-      if (rack_position_received_srv_response.success)
+      rack_x_ = msg->data.data.x;
+      rack_y_ = msg->data.data.y;
+      rack_z_ = msg->data.data.z;
+
+      std_srvs::TriggerRequest rack_position_received_srv_request;
+      std_srvs::TriggerResponse rack_position_received_srv_response;
+
+      if (rackPositionReceivedServiceCb(rack_position_received_srv_request, rack_position_received_srv_response))
       {
-        RCOMPONENT_INFO_STREAM("Successfully switched from GETTING_RACK_POSITION to CALCULATING_GOAL");
+        if (rack_position_received_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from GETTING_RACK_POSITION to CALCULATING_GOAL");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from GETTING_RACK_POSITION to CALCULATING_GOAL: " << rack_position_received_srv_response.message.c_str());
+        }
       }
       else
       {
-        RCOMPONENT_WARN_STREAM("Failed to switch from GETTING_RACK_POSITION to CALCULATING_GOAL: " << rack_position_received_srv_response.message.c_str());
+        RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/rack_position_received");
       }
-    }
-    else
-    {
-      RCOMPONENT_ERROR_STREAM("Failed to call service /mul_pilot/rack_position_received");
     }
   }
   tickTopicsHealth(rtls_sub_name_);
@@ -954,16 +956,16 @@ void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received GO_TO_LAB from HMI");
 
     if (message == "GO_TO_LAB")
-  {
+    {
       if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
       {
         lab_pos_x_ = msg->data.data.endLocation.position[0];
         lab_pos_y_ = msg->data.data.endLocation.position[1];
-        lab_pos_z_ = 0.0; //msg->data.endLocation.position[2];
-        lab_ori_x_ = 0.0; //msg->data.endLocation.orientation[0];
-        lab_ori_y_ = 0.0; //msg->data.endLocation.orientation[1];
-        lab_ori_z_ = -0.710204380492; //msg->data.endLocation.orientation[2];
-        lab_ori_w_ = 0.703995552493; //msg->data.endLocation.orientation[3];
+        lab_pos_z_ = 0.0;             // msg->data.endLocation.position[2];
+        lab_ori_x_ = 0.0;             // msg->data.endLocation.orientation[0];
+        lab_ori_y_ = 0.0;             // msg->data.endLocation.orientation[1];
+        lab_ori_z_ = -0.710204380492; // msg->data.endLocation.orientation[2];
+        lab_ori_w_ = 0.703995552493;  // msg->data.endLocation.orientation[3];
       }
       else
       {

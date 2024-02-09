@@ -9,11 +9,11 @@
 
 // Msgs
 #include <odin_msgs/HMIBase.h>
-#include <odin_msgs/ProxSensorBase.h>
+#include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
 #include <odin_msgs/RTLSBase.h>
-#include <odin_msgs/SmartboxStatusBase.h>
+#include <odin_msgs/SmartboxStatus.h>
 #include <robotnik_msgs/ElevatorStatus.h>
 #include <robotnik_msgs/StringStamped.h>
 #include <std_msgs/String.h>
@@ -114,8 +114,8 @@ protected:
 
   //! Callbacks
   //! Subscription Callbacks
-  void proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg);
-  void smartboxSubCb(const odin_msgs::SmartboxStatusBase::ConstPtr &msg);
+  void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
+  void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
   void rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg);
   void hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg);
   void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
@@ -169,6 +169,8 @@ protected:
   bool mission_received_;
   float poi_x_{0.0};
   float poi_y_{0.0};
+  float poi_rot_z_{0.0};
+  float poi_rot_w_{1.0};
   float home_x_{0.0};
   float home_y_{0.0};
 
@@ -180,11 +182,11 @@ protected:
   double rack_x_{0.0};
   double rack_y_{0.0};
   double rack_z_{0.0};
-  double x1_{0.0993};
-  double y1_{0.3007};
+  double x1_{1.59983614424};
+  double y1_{1.7909510717};
   double z1_{0.0};
-  double x2_{-0.84};
-  double y2_{1.5174};
+  double x2_{12.764839128};
+  double y2_{2.96726033821};
   double z2_{0.0};
   double x_goal_{0.0};
   double y_goal_{0.0};

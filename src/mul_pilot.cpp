@@ -23,9 +23,9 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
   readParam(pnh_, "hmi_sub", hmi_sub_name_, "/mul_pilot/hmi", required);
   readParam(pnh_, "elevator_sub", elevator_sub_name_, "/robot/robotnik_base_control/elevator_status", required);
-  readParam(pnh_, "pick_sequence", pick_sequence_, "PICK_SEQUENCE", required);
+  readParam(pnh_, "pick_sequence", pick_sequence_, "TEST_ALLINEAMENTO_RUOTE", required);
   readParam(pnh_, "place_sequence", place_sequence_, "PLACE_SEQUENCE", required);
-  readParam(pnh_, "release_sequence", release_sequence_, "RELEASE_SEQUENCE", required);
+  readParam(pnh_, "release_sequence", release_sequence_, "RELEASE_AND_HOME", required);
 }
 
 int MulPilot::rosSetup()
@@ -43,9 +43,9 @@ int MulPilot::rosSetup()
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
 
   //! Subscribers
-  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensorBase>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
+  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
   addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, not_required);
-  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatusBase>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
+  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &MulPilot::smartboxSubCb, this);
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
   rtls_sub_ = nh_.subscribe<odin_msgs::RTLSBase>(rtls_sub_name_, 10, &MulPilot::rtlsSubCb, this);
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
@@ -319,8 +319,8 @@ void MulPilot::navigatingToRackState()
     move_base_goal_.target_pose.pose.position.z = z_goal_;
     move_base_goal_.target_pose.pose.orientation.x = 0.0;
     move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_goal_.target_pose.pose.orientation.z = 0.998652902351;
+    move_base_goal_.target_pose.pose.orientation.w = 0.0518881549817;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&MulPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -352,6 +352,8 @@ void MulPilot::navigatingToPoiState()
   if (!navigation_command_sent_)
   {
     RCOMPONENT_INFO_STREAM("Sending command to navigate to the POI...");
+    RCOMPONENT_INFO_STREAM("x: " << poi_x_ << ", y: " << poi_y_);
+    
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
@@ -360,8 +362,10 @@ void MulPilot::navigatingToPoiState()
     move_base_goal_.target_pose.pose.position.z = 0.0;
     move_base_goal_.target_pose.pose.orientation.x = 0.0;
     move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_goal_.target_pose.pose.orientation.z = -0.703345435322;
+    move_base_goal_.target_pose.pose.orientation.w = 0.710848224737;
+
+    RCOMPONENT_INFO_STREAM(move_base_goal_);
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&MulPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -383,6 +387,7 @@ void MulPilot::navigatingToLabState()
   if (!navigation_command_sent_)
   {
     RCOMPONENT_INFO_STREAM("Sending command to navigate to the lab...");
+    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
@@ -475,8 +480,8 @@ void MulPilot::navigatingToHomeState()
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = home_x_;
-    move_base_goal_.target_pose.pose.position.y = home_y_;
+    move_base_goal_.target_pose.pose.position.x = 0.953378100745;
+    move_base_goal_.target_pose.pose.position.y = 0.526700783056;
     move_base_goal_.target_pose.pose.position.z = 0.0;
     move_base_goal_.target_pose.pose.orientation.x = 0.0;
     move_base_goal_.target_pose.pose.orientation.y = 0.0;
@@ -780,11 +785,11 @@ bool MulPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_s
 /* Callbacks */
 //! Subscription Callbacks
 // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg)
+void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    std::string message = msg->data.message;
+    std::string message = msg->message;
     RCOMPONENT_WARN_STREAM("Received message from Proximity Sensor: " + message);
 
     if (message == "action needed")
@@ -792,10 +797,10 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg)
       std_srvs::TriggerRequest mission_received_srv_request;
       std_srvs::TriggerResponse mission_received_srv_response;
 
-      float poi_x_ = msg->data.data.Posx;
-      float poi_y_ = msg->data.data.Posy;
-      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_);
-
+      poi_x_ = msg->data.Posx;
+      poi_y_ = msg->data.Posy;
+      //RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ << ", rot_w=" << poi_rot_w_);
+      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ );
       if (missionReceivedServiceCb(mission_received_srv_request, mission_received_srv_response))
       {
         if (mission_received_srv_response.success)
@@ -817,11 +822,11 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensorBase::ConstPtr &msg)
 }
 
 // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatusBase::ConstPtr &msg)
+void MulPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 {
   if (current_state_ == "WAITING_FOR_MISSION")
   {
-    float battery = msg->data.data.battery;
+    float battery = msg->data.battery;
 
     if (battery < 10.0)
     {
@@ -946,19 +951,19 @@ void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   if (current_state_ == "WAITING_IN_POI")
   {
     std::string message = msg->data.data.taskType;
-    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+    RCOMPONENT_WARN_STREAM("Received GO_TO_LAB from HMI");
 
     if (message == "GO_TO_LAB")
-    {
-      if (msg->data.data.startLocation.position.size() == 3 && msg->data.data.startLocation.orientation.size() == 4)
+  {
+      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
       {
-        lab_pos_x_ = msg->data.data.startLocation.position[0];
-        lab_pos_y_ = msg->data.data.startLocation.position[1];
-        lab_pos_z_ = msg->data.data.startLocation.position[2];
-        lab_ori_x_ = msg->data.data.startLocation.orientation[0];
-        lab_ori_y_ = msg->data.data.startLocation.orientation[1];
-        lab_ori_z_ = msg->data.data.startLocation.orientation[2];
-        lab_ori_w_ = msg->data.data.startLocation.orientation[3];
+        lab_pos_x_ = msg->data.data.endLocation.position[0];
+        lab_pos_y_ = msg->data.data.endLocation.position[1];
+        lab_pos_z_ = 0.0; //msg->data.endLocation.position[2];
+        lab_ori_x_ = 0.0; //msg->data.endLocation.orientation[0];
+        lab_ori_y_ = 0.0; //msg->data.endLocation.orientation[1];
+        lab_ori_z_ = -0.710204380492; //msg->data.endLocation.orientation[2];
+        lab_ori_w_ = 0.703995552493; //msg->data.endLocation.orientation[3];
       }
       else
       {
@@ -991,11 +996,13 @@ void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   if (current_state_ == "WAITING_IN_LAB")
   {
     std::string message = msg->data.data.taskType;
-    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+    float message_2 = msg->data.data.endLocation.position[0];
+    // RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // WAITING_IN_LAB --> RELEASING_RACK
     if (message == "RELEASE_AND_HOME")
     {
+      RCOMPONENT_WARN_STREAM("Received RELEASE_AND_HOME from HMI");
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1019,8 +1026,10 @@ void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
 
     // WAITING_IN_LAB --> HOMING_RACK
-    else if (message == "BRING_RACK_HOME")
+    // else if (message == "BRING_RACK_HOME")
+    else if (message_2 == 1.0)
     {
+      RCOMPONENT_WARN_STREAM("Received BRING_RACK_HOME from HMI");
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 

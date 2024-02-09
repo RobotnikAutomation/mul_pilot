@@ -26,11 +26,11 @@
 	<arg name="elevator_sub" default="/robot/robotnik_base_control/elevator_status" />
 
 	<!-- Pick sequence -->
-	<arg name="pick_sequence" default="PICK_SEQUENCE"/>
+	<arg name="pick_sequence" default="TEST_ALLINEAMENTO_RUOTE"/>
 	<!-- Place sequence -->
 	<arg name="place_sequence" default="PLACE_SEQUENCE"/>
 	<!-- Release sequence -->
-	<arg name="release_sequence" default="RELEASE_SEQUENCE"/>
+	<arg name="release_sequence" default="RELEASE_AND_HOME"/>
 
 	<!-- Load .yaml example -->
 	<rosparam file="$(find mul_pilot)/config/example.yaml" command="load" />

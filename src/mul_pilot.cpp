@@ -23,6 +23,8 @@ void MulPilot::rosReadParams()
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/mul_pilot/smartbox", required);
   readParam(pnh_, "hmi_sub", hmi_sub_name_, "/mul_pilot/hmi", required);
   readParam(pnh_, "elevator_sub", elevator_sub_name_, "/robot/robotnik_base_control/elevator_status", required);
+  readParam(pnh_, "battery_sub", battery_sub_name_, "/robot/battery_estimator/data", required);
+  readParam(pnh_, "pose_sub", pose_sub_name_, "/robot/amcl_pose", required);
   readParam(pnh_, "pick_sequence", pick_sequence_, "TEST_ALLINEAMENTO_RUOTE", required);
   readParam(pnh_, "place_sequence", place_sequence_, "PLACE_SEQUENCE", required);
   readParam(pnh_, "release_sequence", release_sequence_, "RELEASE_AND_HOME", required);
@@ -53,6 +55,10 @@ int MulPilot::rosSetup()
   addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
   elevator_sub_ = nh_.subscribe<robotnik_msgs::ElevatorStatus>(elevator_sub_name_, 10, &MulPilot::elevatorSubCb, this);
   addTopicsHealth(&elevator_sub_, elevator_sub_name_, 50.0, not_required);
+  battery_sub_ = nh_.subscribe<robotnik_msgs::BatteryStatus>(battery_sub_name_, 10, &MulPilot::batterySubCb, this);
+  addTopicsHealth(&battery_sub_, battery_sub_name_, 50.0, not_required);
+  pose_sub_ = nh_.subscribe<>(pose_sub_name_, 10, &MulPilot::poseSubCb, this);
+  addTopicsHealth(&pose_sub_, pose_sub_name_, 50.0, not_required);
 
   //! Service Servers
   mission_received_srv_ = pnh_.advertiseService("/mul_pilot/mission_received", &MulPilot::missionReceivedServiceCb, this);
@@ -115,6 +121,13 @@ void MulPilot::initState()
 
   navigation_command_sent_ = false;
   sequence_sent_ = false;
+
+  odin_msgs::RobotStatus robot_status;
+  robot_status.data.battery = battery_status_;
+  robot_status.data.status = current_state_;
+  robot_status.data.pose = pose_;
+
+  robot_status_pub_.publish(robot_status);
 
   switchToState(robotnik_msgs::State::STANDBY_STATE);
 }
@@ -230,6 +243,13 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
 
   navigation_command_sent_ = false;
   sequence_sent_ = false;
+
+  odin_msgs::RobotStatus robot_status;
+  robot_status.data.battery = battery_status_;
+  robot_status.data.status = current_state_;
+  robot_status.data.pose = pose_;
+
+  robot_status_pub_.publish(robot_status);
 }
 /* State Machine !*/
 
@@ -798,8 +818,8 @@ void MulPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
 
       poi_x_ = msg->data.Posx;
       poi_y_ = msg->data.Posy;
-      // RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_ << ", rot_w=" << poi_rot_w_);
-      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_ << ", rot_z=" << poi_rot_z_);
+      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_);
+
       if (missionReceivedServiceCb(mission_received_srv_request, mission_received_srv_response))
       {
         if (mission_received_srv_response.success)
@@ -1055,6 +1075,18 @@ void MulPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
   }
   tickTopicsHealth(hmi_sub_name_);
+}
+
+void MulPilot::batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg)
+{
+  battery_status_ = msg->level;
+  tickTopicsHealth(battery_sub_name_);
+}
+
+void MulPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
+{
+  pose_ = *msg;
+  tickTopicsHealth(pose_sub_name_);
 }
 
 //! Action Callbacks

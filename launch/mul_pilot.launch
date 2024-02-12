@@ -24,6 +24,10 @@
 	<arg name="hmi_sub" default="/mul_pilot/hmi" />
 	<!-- Elevator (sub) -->
 	<arg name="elevator_sub" default="/robot/robotnik_base_control/elevator_status" />
+	<!-- Battery (sub) -->
+	<arg name="battery_sub" default="/robot/battery_estimator/data" />
+	<!-- Pose (sub) -->
+	<arg name="pose_sub" default="/robot/amcl_pose" />
 
 	<!-- Pick sequence -->
 	<arg name="pick_sequence" default="TEST_ALLINEAMENTO_RUOTE"/>
@@ -46,6 +50,8 @@
 			<param name="smartbox_sub" value="$(arg smartbox_sub)"/>
 			<param name="hmi_sub" value="$(arg hmi_sub)"/>
 			<param name="elevator_sub" value="$(arg elevator_sub)"/>
+			<param name="battery_sub" value="$(arg battery_sub)"/>
+			<param name="pose_sub" value="$(arg pose_sub)"/>			
 			<param name="pick_sequence" value="$(arg pick_sequence)"/>
 			<param name="place_sequence" value="$(arg place_sequence)"/>
 			<param name="release_sequence" value="$(arg release_sequence)"/>

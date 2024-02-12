@@ -8,12 +8,14 @@
 #include <math.h>
 
 // Msgs
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <odin_msgs/HMIBase.h>
 #include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
 #include <odin_msgs/RobotTask.h>
 #include <odin_msgs/RTLSBase.h>
 #include <odin_msgs/SmartboxStatus.h>
+#include <robotnik_msgs/BatteryStatus.h>
 #include <robotnik_msgs/ElevatorStatus.h>
 #include <robotnik_msgs/StringStamped.h>
 #include <std_msgs/String.h>
@@ -81,6 +83,12 @@ protected:
   ros::Subscriber elevator_sub_;
   string elevator_sub_name_;
 
+  ros::Subscriber battery_sub_;
+  string battery_sub_name_;
+  
+  ros::Subscriber pose_sub_;
+  string pose_sub_name_;
+
   //! Services Servers
   ros::ServiceServer mission_received_srv_;
   ros::ServiceServer elevator_down_srv_;
@@ -119,6 +127,8 @@ protected:
   void rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg);
   void hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg);
   void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
+  void batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg);
+  void poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
 
   //! Service Callbacks
   // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
@@ -159,6 +169,8 @@ protected:
   std_msgs::String status_;
   string current_state_;
   string previous_state_;
+  float battery_status_{0.0};
+  geometry_msgs::PoseWithCovarianceStamped pose_;
 
   //! State Machine
   void runRobotStateMachine();

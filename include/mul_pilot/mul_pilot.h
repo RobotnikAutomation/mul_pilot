@@ -197,12 +197,14 @@ protected:
   double x1_{1.59983614424};
   double y1_{1.7909510717};
   double z1_{0.0};
-  double x2_{12.764839128};
+  double x2_{12.614839128};
   double y2_{2.96726033821};
   double z2_{0.0};
   double x_goal_{0.0};
   double y_goal_{0.0};
   double z_goal_{0.0};
+  double z_orient_goal{0.0};
+  double w_orient_goal{0.0};
 
   //! CALCULATING_GOAL
   void calculatingGoalState();

@@ -294,12 +294,16 @@ void MulPilot::calculatingGoalState()
     x_goal_ = x1_;
     y_goal_ = y1_;
     z_goal_ = z1_;
+    z_orient_goal= 0.998652902351;
+    w_orient_goal= 0.0518881549817;
   }
   else
   {
     x_goal_ = x2_;
     y_goal_ = y2_;
     z_goal_ = z2_;
+    z_orient_goal= 0.117846;
+    w_orient_goal= 0.993032;
   }
 
   std_srvs::TriggerRequest goal_calculated_srv_request;
@@ -339,8 +343,8 @@ void MulPilot::navigatingToRackState()
     move_base_goal_.target_pose.pose.position.z = z_goal_;
     move_base_goal_.target_pose.pose.orientation.x = 0.0;
     move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = 0.998652902351;
-    move_base_goal_.target_pose.pose.orientation.w = 0.0518881549817;
+    move_base_goal_.target_pose.pose.orientation.z = z_orient_goal;
+    move_base_goal_.target_pose.pose.orientation.w = w_orient_goal;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&MulPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;

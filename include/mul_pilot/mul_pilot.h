@@ -67,6 +67,9 @@ protected:
   ros::Publisher robot_result_pub_;
   string robot_result_pub_name_;
 
+  ros::Publisher state_machine_state_pub_;
+  std_msgs::String current_state_data_;
+ 
   //! Subscribers
   ros::Subscriber proxsensor_sub_;
   string proxsensor_sub_name_;
@@ -85,7 +88,7 @@ protected:
 
   ros::Subscriber battery_sub_;
   string battery_sub_name_;
-  
+
   ros::Subscriber pose_sub_;
   string pose_sub_name_;
 

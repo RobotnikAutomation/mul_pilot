@@ -43,6 +43,7 @@ int MulPilot::rosSetup()
   status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
   robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
+  state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/mul_pilot/state_machine", 10);
 
   //! Subscribers
   proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &MulPilot::proxsensorSubCb, this);
@@ -128,6 +129,9 @@ void MulPilot::initState()
   robot_status.data.pose = pose_;
 
   robot_status_pub_.publish(robot_status);
+
+  current_state_data_.data = current_state_;
+  state_machine_state_pub_.publish(current_state_data_);
 
   switchToState(robotnik_msgs::State::STANDBY_STATE);
 }
@@ -250,6 +254,9 @@ void MulPilot::changeState(const string &next_state, const string &additional_in
   robot_status.data.pose = pose_;
 
   robot_status_pub_.publish(robot_status);
+
+  current_state_data_.data = current_state_;
+  state_machine_state_pub_.publish(current_state_data_);
 }
 /* State Machine !*/
 
@@ -294,16 +301,16 @@ void MulPilot::calculatingGoalState()
     x_goal_ = x1_;
     y_goal_ = y1_;
     z_goal_ = z1_;
-    z_orient_goal= 0.998652902351;
-    w_orient_goal= 0.0518881549817;
+    z_orient_goal = 0.998652902351;
+    w_orient_goal = 0.0518881549817;
   }
   else
   {
     x_goal_ = x2_;
     y_goal_ = y2_;
     z_goal_ = z2_;
-    z_orient_goal= 0.117846;
-    w_orient_goal= 0.993032;
+    z_orient_goal = 0.117846;
+    w_orient_goal = 0.993032;
   }
 
   std_srvs::TriggerRequest goal_calculated_srv_request;
